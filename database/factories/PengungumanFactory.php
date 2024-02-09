@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,7 +21,7 @@ class PengungumanFactory extends Factory
             'judul' => fake()->sentence(),
             'konten' => fake()->text($maxNbChars = 300),
             'waktu' => now(),
-            'created_by' => 2
+            'created_by' => User::all()->except(1)->random()->id
         ];
     }
 }

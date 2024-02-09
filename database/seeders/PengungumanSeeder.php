@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Pengunguman;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class PengungumanSeeder extends Seeder
@@ -13,6 +12,6 @@ class PengungumanSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\Pengunguman::factory(100)->create();
+        Pengunguman::factory(100)->create();
     }
 }
