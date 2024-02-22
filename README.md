@@ -5,6 +5,7 @@ git clone https://github.com/anjuarianto/skripsi-nikke-backend.git
 cd skripsi-nikke-backend
 composer install
 cp .env.example .env
+php artisan key:generate
 ```
 
 
@@ -18,16 +19,22 @@ DB_USERNAME=[username_database]
 DB_PASSWORD=[user_password_database]
 ```
 
+### Publish config sanctum authentication
+```bash
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+```
+
+
+### Publish config spatie permission
+```bash
+php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
+```
+
 ### Lakukan clear dan cache config
 ```bash
 php artisan config:clear
 php artisan config:cache
 php artisan optimize
-```
-
-### Publish config sanctum authentication
-```bash
-php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
 ```
 
 ### Buat database kosong dengan nama sesuai yan tertera di config lalu migrate
