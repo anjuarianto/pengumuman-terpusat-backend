@@ -14,9 +14,9 @@ class DatabaseSeeder extends Seeder
     {
         $seeders = [
             UserSeeder::class,
+            RoleSeeder::class,
             RoomSeeder::class,
             UserGroupSeeder::class,
-            RoleSeeder::class,
             PengumumanSeeder::class,
         ];
 
