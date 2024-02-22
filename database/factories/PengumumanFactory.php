@@ -6,9 +6,9 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Pengunguman>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Pengumuman>
  */
-class PengungumanFactory extends Factory
+class PengumumanFactory extends Factory
 {
     /**
      * Define the model's default state.

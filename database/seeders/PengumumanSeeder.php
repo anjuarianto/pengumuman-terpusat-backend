@@ -2,16 +2,18 @@
 
 namespace Database\Seeders;
 
+use App\Models\Pengumuman;
 use App\Models\Pengunguman;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class PengungumanSeeder extends Seeder
+class PengumumanSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        Pengunguman::factory(100)->create();
+        Pengumuman::factory(100)->create();
     }
 }

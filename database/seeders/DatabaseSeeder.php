@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
         $userSeeder = new UserSeeder();
         $userSeeder->run();
         
-        $pengungumanSeeder = new PengungumanSeeder();
+        $pengungumanSeeder = new PengumumanSeeder();
         $pengungumanSeeder->run();
     }
 }

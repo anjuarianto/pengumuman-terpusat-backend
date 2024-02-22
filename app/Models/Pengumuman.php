@@ -4,18 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\Builder;
 
-class Pengunguman extends Model
+class Pengumuman extends Model
 {
     use HasFactory;
 
-    protected $table = 'pengunguman';
+    protected $table = 'pengumuman';
 
     protected $fillable = [
         'judul', 'konten', 'waktu', 'created_by'
     ];
-
 
     public function dibuat_oleh() {
         return $this->belongsTo(User::class, 'created_by', 'id');
@@ -32,5 +30,4 @@ class Pengunguman extends Model
         
         return $query;
     }
-
 }

@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\PengumumanController;
 use App\Http\Controllers\PengungumanController;
+use App\Http\Controllers\RoomController;
+use App\Http\Controllers\UserGroupController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,9 +25,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-
 Route::middleware('auth:sanctum')->group(function () {
     
     Route::post('/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
 });
-Route::resource('pengunguman', PengungumanController::class);
+
+Route::resource('pengumuman', PengumumanController::class);
+Route::resource('user-group', UserGroupController::class);
+Route::resource('room', RoomController::class);
