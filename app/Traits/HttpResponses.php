@@ -3,21 +3,23 @@
 namespace App\Traits;
 
 
+use Illuminate\Http\Response;
+
 trait HttpResponses {
-    protected function success($data, $message = null, $code = 200) 
+    protected function success($data, $code = Response::HTTP_OK): \Illuminate\Http\JsonResponse
     {
         return response()->json([
             'status' => 'success',
-            'message' => $message,
             'data' => $data
         ], $code);
     }
 
-    protected function error($data = null, $message = null, $code) 
+    protected function error($data, $message = null, $code = Response::HTTP_BAD_REQUEST): \Illuminate\Http\JsonResponse
     {
         return response()->json([
             'status' => 'error',
             'message' => $message,
+            'data' => $data
         ], $code);
     }
 }

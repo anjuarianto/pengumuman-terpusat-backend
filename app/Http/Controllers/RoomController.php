@@ -6,21 +6,25 @@ use App\Http\Requests\StoreRoomRequest;
 use App\Http\Requests\UpdateRoomRequest;
 use App\Http\Resources\RoomResource;
 use App\Models\Room;
-use Illuminate\Http\Request;
+use App\Traits\HttpResponses;
+use Illuminate\Http\Response;
 
 class RoomController extends Controller
 {
+    use HttpResponses;
+
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
-        $room = Room::search($request->search)->paginate();
-        
-        !$room->count() > 0 ? $message = 'No data retrieved' : '';
+        $rooms = Room::all();
 
-        $room = RoomResource::collection($room);
-        return $this->success($room, $message ?? 'Data retrieved successfully');
+        if ($rooms->isEmpty()) {
+            return $this->error(null, 'No rooms found', Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->success(RoomResource::collection($rooms));
     }
 
     /**
@@ -28,11 +32,12 @@ class RoomController extends Controller
      */
     public function store(StoreRoomRequest $request)
     {
-        Room::create([
-            'name' => $request->name
+        $room = Room::create([
+            'name' => $request->name,
+            // Add other fields as needed
         ]);
 
-        return $this->success([], 'Data created successfully');
+        return $this->success(new RoomResource($room), Response::HTTP_CREATED);
     }
 
     /**
@@ -40,8 +45,7 @@ class RoomController extends Controller
      */
     public function show(Room $room)
     {
-        $room = new RoomResource($room);
-        return $this->success($room, 'Request success');
+        return $this->success(new RoomResource($room));
     }
 
     /**
@@ -50,10 +54,11 @@ class RoomController extends Controller
     public function update(UpdateRoomRequest $request, Room $room)
     {
         $room->update([
-            'name' => $request->name
+            'name' => $request->name,
+            // Add other fields as needed
         ]);
 
-        return $this->success([], 'Data updated successfully');
+        return $this->success(new RoomResource($room));
     }
 
     /**
@@ -62,6 +67,7 @@ class RoomController extends Controller
     public function destroy(Room $room)
     {
         $room->delete();
-        $room->success([], 'Data deleted successfully');
+
+        return $this->success(null, Response::HTTP_NO_CONTENT);
     }
 }

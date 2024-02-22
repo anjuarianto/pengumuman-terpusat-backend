@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateUserGroupRequest;
 use App\Http\Resources\UserGroupResource;
 use App\Models\UserGroup;
 use App\Traits\HttpResponses;
+use Illuminate\Http\Response;
 
 class UserGroupController extends Controller
 {
@@ -16,13 +17,15 @@ class UserGroupController extends Controller
      */
     public function index()
     {
-        $user_group = UserGroup::get();
-        
-        
-        !$user_group->count() > 0 ? $message = 'No data retrieved' : '';
+        $userGroup = UserGroup::get();
 
-        $user_groups = UserGroupResource::collection($user_group);
-        return $this->success($user_groups, $message ?? 'Data retrieved successfully');
+        if ($userGroup->isEmpty()) {
+            return $this->error(null, 'No data found', Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->success(
+            UserGroupResource::collection($userGroup)
+        );
     }
 
     /**
@@ -30,11 +33,11 @@ class UserGroupController extends Controller
      */
     public function store(StoreUserGroupRequest $request)
     {
-        UserGroup::create([
+        $userGroup = UserGroup::create([
             'name' => $request->name
         ]);
 
-        return $this->success([], 'Data created successfully');
+        return $this->success(new UserGroupResource($userGroup), Response::HTTP_CREATED);
     }
 
     /**
@@ -42,8 +45,7 @@ class UserGroupController extends Controller
      */
     public function show(UserGroup $userGroup)
     {
-        $user_group = new UserGroupResource($userGroup);
-        return $this->success($user_group, 'Request success');
+        return $this->success(new UserGroupResource($userGroup));
     }
 
     /**
@@ -55,7 +57,7 @@ class UserGroupController extends Controller
             'name' => $request->name
         ]);
 
-        return $this->success([], 'Data updated successfully');
+        return $this->success(new UserGroupResource($userGroup));
     }
 
     /**
@@ -65,6 +67,6 @@ class UserGroupController extends Controller
     {
         $userGroup->delete();
 
-        return $this->success([], 'Data deleted successfully');
+        return $this->success(null, Response::HTTP_NO_CONTENT);
     }
 }

@@ -33,7 +33,7 @@ class Handler extends ExceptionHandler
 
         $this->renderable(function (NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
-                return $this->error(null, 'Data tidak ditemukan', 404);
+                return $this->error(null, 'No data found', 404);
             }
         });
     }
