@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Room;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -21,7 +22,8 @@ class PengumumanFactory extends Factory
             'judul' => fake()->sentence(),
             'konten' => fake()->text($maxNbChars = 300),
             'waktu' => now(),
-            'created_by' => User::all()->except(1)->random()->id
+            'created_by' => User::all()->except(1)->random()->id,
+            'room_id' => Room::all()->random()->id,
         ];
     }
 }

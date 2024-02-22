@@ -17,9 +17,11 @@ return new class extends Migration
             $table->longText('konten');
             $table->dateTime('waktu');
             $table->unsignedBigInteger('created_by');
+            $table->unsignedBigInteger('room_id');
             $table->timestamps();
 
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('room_id')->references('id')->on('room')->onDelete('cascade');
         });
     }
 
