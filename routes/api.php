@@ -1,11 +1,12 @@
 <?php
 
 use App\Http\Controllers\PengumumanController;
-use App\Http\Controllers\PengungumanController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\UserGroupController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,15 +22,21 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [\App\Http\Controllers\Api\AuthController::class, 'register']);
 Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
+    return Auth::user()->load(['roles' => function ($query) {
+        $query->take(1);
+    }]);
+
 });
 
 Route::middleware('auth:sanctum')->group(function () {
-    
+    Route::resource('pengumuman', PengumumanController::class);
+    Route::resource('user-group', UserGroupController::class);
+    Route::resource('room', RoomController::class);
+    Route::get('/user', function () {
+        return User::all();
+    });
+
     Route::post('/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
 });
 
-Route::resource('pengumuman', PengumumanController::class);
-Route::resource('user-group', UserGroupController::class);
-Route::resource('room', RoomController::class);

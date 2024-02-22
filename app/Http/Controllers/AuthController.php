@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\LoginUserRequest;
 use Auth;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 class AuthController extends Controller
 {

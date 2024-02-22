@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,8 @@ class RoomFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => fake()->sentence(),
+            'description' => fake()->text($maxNbChars = 255)
         ];
     }
 }

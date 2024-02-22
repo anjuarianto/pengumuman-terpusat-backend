@@ -12,10 +12,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $userSeeder = new UserSeeder();
-        $userSeeder->run();
-        
-        $pengungumanSeeder = new PengumumanSeeder();
-        $pengungumanSeeder->run();
+        $seeders = [
+            UserSeeder::class,
+            RoomSeeder::class,
+            UserGroupSeeder::class,
+            RoleSeeder::class,
+            PengumumanSeeder::class,
+        ];
+
+        foreach ($seeders as $seeder) {
+            $this->call($seeder);
+        }
     }
 }

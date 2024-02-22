@@ -3,16 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePengumumanRequest;
-use App\Http\Requests\StorePengungumanRequest;
 use App\Http\Requests\UpdatePengumumanRequest;
-use App\Http\Requests\UpdatePengungumanRequest;
 use App\Http\Resources\PaginateResource;
 use App\Http\Resources\PengumumanResource;
 use App\Http\Resources\PengungumanResource;
 use App\Models\Pengumuman;
-use App\Models\Pengunguman;
 use App\Traits\HttpResponses;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class PengumumanController extends Controller
 {
@@ -23,11 +22,13 @@ class PengumumanController extends Controller
     public function index(Request $request)
     {
         $pengumuman = Pengumuman::search($request->search)->paginate();
-        
-        !$pengumuman->count() > 0 ? $message = 'No data retrieved' : '';
+
+        if ($pengumuman->isEmpty()) {
+            return $this->error(null, 'No pengumuman found', Response::HTTP_NOT_FOUND);
+        }
 
         $pengumuman = PengumumanResource::collection($pengumuman)->response()->getData(true);
-        return $this->success($pengumuman, $message ?? 'Data retrieved successfully');
+        return $this->success($pengumuman);
     }
 
     /**
@@ -35,14 +36,16 @@ class PengumumanController extends Controller
      */
     public function store(StorePengumumanRequest $request)
     {
-        Pengumuman::create([
+
+        $pengumuman = Pengumuman::create([
             'judul' => $request->post('judul'),
             'konten' => $request->konten,
             'waktu' => $request->waktu,
-            'created_by' => 5
+            'created_by' => Auth::user()->id,
+            'room_id' => $request->room_id,
         ]);
 
-        return $this->success([], 'Data created successfully');
+        return $this->success($pengumuman, Response::HTTP_CREATED);
     }
 
     /**
@@ -51,7 +54,7 @@ class PengumumanController extends Controller
     public function show(Pengumuman $pengumuman)
     {
         $pengumuman = new PengungumanResource($pengumuman);
-        return $this->success($pengumuman, 'Request success');
+        return $this->success($pengumuman);
     }
 
     /**
@@ -63,10 +66,11 @@ class PengumumanController extends Controller
             'judul' => $request->judul,
             'konten' => $request->konten,
             'waktu' => $request->waktu,
-            'created_by' => 4
+            'created_by' => Auth::user()->id,
+            'room_id' => $request->room_id,
         ]);
 
-        return $this->success([], 'Data updated successfully');
+        return $this->success($pengumuman);
     }
 
     /**
@@ -75,6 +79,6 @@ class PengumumanController extends Controller
     public function destroy(Pengumuman $pengumuman)
     {
         $pengumuman->delete();
-        return $this->success([], 'Data deleted successfully');
+        return $this->success(null, Response::HTTP_NO_CONTENT);
     }
 }
