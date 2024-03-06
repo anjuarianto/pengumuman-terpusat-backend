@@ -21,13 +21,20 @@ class PengumumanController extends Controller
      */
     public function index(Request $request)
     {
-        $pengumuman = Pengumuman::search($request->search)->paginate();
+        $pengumumans = Pengumuman::search($request->search)->paginate();
 
-        if ($pengumuman->isEmpty()) {
+        $pengumumans->each(function ($pengumuman) {
+            $pengumuman->load('pengumumanToUsers');
+
+            $pengumuman->usersFromPengumumanTo = $pengumuman->getUsersFromPengumumanToAttribute();
+        });
+
+        if ($pengumumans->isEmpty()) {
             return $this->error(null, 'No pengumuman found', Response::HTTP_NOT_FOUND);
         }
 
-        $pengumuman = PengumumanResource::collection($pengumuman)->response()->getData(true);
+        $pengumuman = PengumumanResource::collection($pengumumans)->response()->getData(true);
+
         return $this->success($pengumuman);
     }
 

@@ -23,9 +23,7 @@ Route::post('/register', [\App\Http\Controllers\Api\AuthController::class, 'regi
 Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
-    return Auth::user()->load(['roles' => function ($query) {
-        $query->take(1);
-    }]);
+    return Auth::user()->load(['roles.permissions']);
 
 });
 

@@ -61,11 +61,15 @@ class User extends Authenticatable
         } else if($firstKeyDomain == 'student') {
             $role = Role::where('name', 'mahasiswa')->first();
             if ($role) {
-                $this->roles()->syncRoles($role->id);
+                $this->roles()->syncWithoutDetaching($role->id);
             }
         }
 
     }
 
+    public function groups()
+    {
+        return $this->belongsToMany(UserGroup::class, 'user_group_has_user', 'user_id', 'user_group_id');
+    }
 
 }

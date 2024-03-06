@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder;
 
 class PengumumanTo extends Model
 {
@@ -14,5 +15,10 @@ class PengumumanTo extends Model
     protected $fillable = [
         'pengumuman_id', 'is_single_user', 'penerima_id'
     ];
-    
+
+    public function pengumuman()
+    {
+        return $this->belongsTo(Pengumuman::class, 'pengumuman_id');
+    }
+
 }

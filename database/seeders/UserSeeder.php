@@ -25,7 +25,5 @@ class UserSeeder extends Seeder
             'email' => 'annike.120140041@student.itera.ac.id',
             'password' => Hash::make('password')
         ]);
-
-//        User::factory(10)->create();
     }
 }

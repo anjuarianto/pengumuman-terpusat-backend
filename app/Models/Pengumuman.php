@@ -15,6 +15,34 @@ class Pengumuman extends Model
         'judul', 'konten', 'waktu', 'created_by', 'room_id'
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function pengumumanToUsers()
+    {
+        return $this->hasMany(PengumumanTo::class, 'pengumuman_id');
+    }
+
+    /**
+     * Define a custom attribute to get users from pengumuman_to relation.
+     */
+    public function getUsersFromPengumumanToAttribute()
+    {
+        $usersCollection = collect([]);
+
+        $this->pengumumanToUsers->each(function ($pengumumanTo) use ($usersCollection) {
+            if ($pengumumanTo->is_single_user) {
+                $usersCollection->push(User::find($pengumumanTo->penerima_id));
+            } else {
+                $usersCollection->push(UserGroup::find($pengumumanTo->penerima_id)->users);
+            }
+        });
+
+        return $usersCollection->flatten();
+    }
+
     public function dibuat_oleh(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'id');
