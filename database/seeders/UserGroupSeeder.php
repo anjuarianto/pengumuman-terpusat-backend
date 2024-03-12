@@ -2,16 +2,28 @@
 
 namespace Database\Seeders;
 
+use App\Models\UserGroup;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class UserGroupSeeder extends Seeder
 {
+
+    protected $count;
+
+    public function __construct($count = 10)
+    {
+        $this->count = $count;
+    }
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        //
+        foreach(range(1, $this->count) as $index) {
+            UserGroup::create([
+                'name' => 'Group ' . $index
+            ]);
+        }
     }
 }

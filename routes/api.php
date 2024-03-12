@@ -31,6 +31,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::resource('pengumuman', PengumumanController::class);
     Route::resource('user-group', UserGroupController::class);
     Route::resource('room', RoomController::class);
+
+//    Route::get('/user-to', )
+
     Route::get('/user', function () {
         return User::all();
     });

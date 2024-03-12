@@ -33,8 +33,7 @@ class RoomController extends Controller
     public function store(StoreRoomRequest $request)
     {
         $room = Room::create([
-            'name' => $request->name,
-            // Add other fields as needed
+            'name' => $request->name
         ]);
 
         return $this->success(new RoomResource($room), Response::HTTP_CREATED);
@@ -45,6 +44,11 @@ class RoomController extends Controller
      */
     public function show(Room $room)
     {
+
+        $room->usersFromRoom = $room->getUsersFromRoomAttribute();
+
+//        return $room;
+
         return $this->success(new RoomResource($room));
     }
 

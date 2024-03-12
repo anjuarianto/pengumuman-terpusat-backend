@@ -13,17 +13,17 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $seeders = [
-            UserSeeder::class,
-            RoleSeeder::class,
-            RoomSeeder::class,
-            UserGroupSeeder::class,
-            PermissionSeeder::class,
-            RolePermissionSeeder::class,
-            PengumumanSeeder::class,
+            new UserSeeder(10),
+            new RoleSeeder(),
+            new UserGroupSeeder(),
+            new RoomSeeder(),
+            new PermissionSeeder(),
+            new RolePermissionSeeder(),
+            new PengumumanSeeder(),
         ];
 
         foreach ($seeders as $seeder) {
-            $this->call($seeder);
+            $seeder->run();
         }
     }
 }
