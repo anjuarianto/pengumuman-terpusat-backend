@@ -11,6 +11,10 @@ class RoomHasMembers extends Model
 
     public $table = 'room_has_members';
 
+    public $fillable = [
+        'room_id', 'user_id', 'is_single_user'
+    ];
+
     public $timestamps = false;
 
 }

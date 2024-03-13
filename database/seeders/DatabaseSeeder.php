@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $seeders = [
-            new UserSeeder(10),
+            new UserSeeder(30),
             new RoleSeeder(),
             new UserGroupSeeder(),
             new RoomSeeder(),

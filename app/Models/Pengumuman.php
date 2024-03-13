@@ -66,4 +66,10 @@ class Pengumuman extends Model
 
         return $query;
     }
+
+    public static function scopeRoom($query, $room_id) {
+        $query->orWhere('room_id', $room_id);
+
+        return $query;
+    }
 }

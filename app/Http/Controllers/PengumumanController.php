@@ -21,7 +21,7 @@ class PengumumanController extends Controller
      */
     public function index(Request $request)
     {
-        $pengumumans = Pengumuman::search($request->search)->paginate();
+        $pengumumans = Pengumuman::search($request->search)->room($request->room_id)->paginate();
 
         $pengumumans->each(function ($pengumuman) {
             $pengumuman->load('pengumumanToUsers');

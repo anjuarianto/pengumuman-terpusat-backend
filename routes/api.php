@@ -23,7 +23,9 @@ Route::post('/register', [\App\Http\Controllers\Api\AuthController::class, 'regi
 Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
-    return Auth::user()->load(['roles.permissions']);
+    return Auth::user()->load(['roles.permissions', 'rooms' => function($query) {
+        return $query->select('id', 'name');
+    }]);
 
 });
 
@@ -32,7 +34,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::resource('user-group', UserGroupController::class);
     Route::resource('room', RoomController::class);
 
-//    Route::get('/user-to', )
+
+    Route::get('/room-member', [\App\Http\Controllers\RoomMemberController::class, 'index']);
+    Route::post('/room-member/join', [\App\Http\Controllers\RoomMemberController::class, 'join']);
+    Route::post('/room-member/unjoin', [\App\Http\Controllers\RoomMemberController::class, 'unjoin']);
 
     Route::get('/user', function () {
         return User::all();
