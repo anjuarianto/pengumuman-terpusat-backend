@@ -53,7 +53,7 @@ class Pengumuman extends Model
         return $this->belongsTo(Room::class, 'room_id', 'id');
     }
 
-    public static function scopeSearch($query, $value) {
+    public static function scopeFilterSearch($query, $value) {
         $query->whereHas('dibuat_oleh', function($query) use ($value) {
             return $query->where("name", "LIKE", "%".$value."%");
         });
@@ -67,8 +67,10 @@ class Pengumuman extends Model
         return $query;
     }
 
-    public static function scopeRoom($query, $room_id) {
-        $query->orWhere('room_id', $room_id);
+    public static function scopeFilterRoom($query, $room_id) {
+        if($room_id) {
+            $query->where('room_id', $room_id);
+        }
 
         return $query;
     }

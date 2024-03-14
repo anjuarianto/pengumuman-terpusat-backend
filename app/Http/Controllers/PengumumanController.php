@@ -8,6 +8,7 @@ use App\Http\Resources\PaginateResource;
 use App\Http\Resources\PengumumanResource;
 use App\Http\Resources\PengungumanResource;
 use App\Models\Pengumuman;
+use App\Models\PengumumanTo;
 use App\Traits\HttpResponses;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -21,7 +22,7 @@ class PengumumanController extends Controller
      */
     public function index(Request $request)
     {
-        $pengumumans = Pengumuman::search($request->search)->room($request->room_id)->paginate();
+        $pengumumans = Pengumuman::filterRoom($request->room_id)->filterSearch($request->search)->paginate();
 
         $pengumumans->each(function ($pengumuman) {
             $pengumuman->load('pengumumanToUsers');
@@ -51,6 +52,15 @@ class PengumumanController extends Controller
             'created_by' => Auth::user()->id,
             'room_id' => $request->room_id,
         ]);
+
+        foreach ($request->recipients as $recipient) {
+
+            PengumumanTo::create([
+                'pengumuman_id' => $pengumuman->id,
+                'penerima_id' => explode('|', $recipient)[1],
+                'is_single_user' => explode('|', $recipient)[0] === '1' ? 1 : 0,
+            ]);
+        }
 
         return $this->success($pengumuman, Response::HTTP_CREATED);
     }

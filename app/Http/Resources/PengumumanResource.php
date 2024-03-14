@@ -23,6 +23,7 @@ class PengumumanResource extends JsonResource
             'judul' => $this->judul,
             'konten' => $this->konten,
             'waktu' => date('d-m-Y H:i:s', strtotime($this->waktu)),
+            'room_id' => $this->room_id,
             'created_by' => $this->dibuat_oleh->name,
             'penerima' => $this->pengumumanToUsers->map(function($pengumumanTo) {
                 return ['penerima_id' => $pengumumanTo->penerima_id, 'is_single_user' => $pengumumanTo->is_single_user ? true : false];
