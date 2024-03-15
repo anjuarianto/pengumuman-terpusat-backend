@@ -32,7 +32,11 @@ class PengumumanResource extends JsonResource
                 return ['id' => $user->id, 'name' => $user->name, 'email' => $user->email];
             }),
             'can_reply' => in_array('reply-pengumuman',  Auth::user()->getPermissionsViaRoles()->pluck('name')->toArray()) &&
-                $this->pengumumanToUsers->contains('penerima_id', Auth::user()->id),
+                ($this->pengumumanToUsers->contains('penerima_id', Auth::user()->id) || $this->created_by == Auth::user()->id),
+            'can_edit' => in_array('edit-pengumuman',  Auth::user()->getPermissionsViaRoles()->pluck('name')->toArray()) &&
+                $this->created_by == Auth::user()->id,
+            'can_delete' => in_array('delete-pengumuman',  Auth::user()->getPermissionsViaRoles()->pluck('name')->toArray()) &&
+                $this->created_by == Auth::user()->id,
         ];
     }
 
