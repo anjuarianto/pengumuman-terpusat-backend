@@ -13,12 +13,12 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $seeders = [
-            new UserSeeder(30),
-            new RoleSeeder(),
-            new UserGroupSeeder(),
-            new RoomSeeder(),
             new PermissionSeeder(),
+            new RoleSeeder(),
             new RolePermissionSeeder(),
+            new UserGroupSeeder(),
+            new UserSeeder(30),
+            new RoomSeeder(),
             new PengumumanSeeder(),
         ];
 

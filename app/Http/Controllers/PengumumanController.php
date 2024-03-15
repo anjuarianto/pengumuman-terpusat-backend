@@ -22,6 +22,10 @@ class PengumumanController extends Controller
      */
     public function index(Request $request)
     {
+        if(!Auth::user()->checkPermissionTo('view-pengumuman')) {
+            return $this->error(null, 'Tidak memiliki akses untuk melihat pengumuman', Response::HTTP_FORBIDDEN);
+        }
+
         $pengumumans = Pengumuman::filterRoom($request->room_id)->filterSearch($request->search)->paginate();
 
         $pengumumans->each(function ($pengumuman) {
@@ -44,15 +48,14 @@ class PengumumanController extends Controller
      */
     public function store(StorePengumumanRequest $request)
     {
+        if(!Auth::user()->checkPermissionTo('create-pengumuman')) {
+            return $this->error(null, 'Tidak memiliki akses untuk membuat pengumuman', Response::HTTP_FORBIDDEN);
+        }
+
         if($request->waktu < date('Y-m-d H:i:s')) {
             return $this->error(null, 'Waktu pengumuman tidak boleh kurang dari waktu sekarang', Response::HTTP_BAD_REQUEST);
         }
 
-        if(in_array('create-pengumuman',  Auth::user()->getPermissionsViaRoles()->pluck('name')->toArray())) {
-            return $this->error(null, 'Tidak memiliki akses untuk membuat pengumuman', Response::HTTP_FORBIDDEN);
-        }
-
-        if(Auth::user()->id)
         $pengumuman = Pengumuman::create([
             'judul' => $request->post('judul'),
             'konten' => $request->konten,
@@ -62,7 +65,6 @@ class PengumumanController extends Controller
         ]);
 
         foreach ($request->recipients as $recipient) {
-
             PengumumanTo::create([
                 'pengumuman_id' => $pengumuman->id,
                 'penerima_id' => explode('|', $recipient)[1],
@@ -78,6 +80,10 @@ class PengumumanController extends Controller
      */
     public function show(Pengumuman $pengumuman)
     {
+        if(!Auth::user()->checkPermissionTo('view-pengumuman')) {
+            return $this->error(null, 'Tidak memiliki akses untuk melihat pengumuman', Response::HTTP_FORBIDDEN);
+        }
+
         $pengumuman = new PengungumanResource($pengumuman);
         return $this->success($pengumuman);
     }
@@ -87,8 +93,12 @@ class PengumumanController extends Controller
      */
     public function update(UpdatePengumumanRequest $request, Pengumuman $pengumuman)
     {
-        if(Auth::user()->id != $pengumuman->created_by) {
+        if( !(Auth::user()->checkPermissionTo('edit-pengumuman') && Auth::user()->id == $pengumuman->created_by) ) {
             return $this->error(null, 'Tidak memiliki akses untuk mengedit pengumuman', Response::HTTP_FORBIDDEN);
+        }
+
+        if($request->waktu < date('Y-m-d H:i:s')) {
+            return $this->error(null, 'Waktu pengumuman tidak boleh kurang dari waktu sekarang', Response::HTTP_BAD_REQUEST);
         }
 
         $pengumuman->update([
@@ -107,7 +117,8 @@ class PengumumanController extends Controller
      */
     public function destroy(Pengumuman $pengumuman)
     {
-        if(Auth::user()->id != $pengumuman->created_by) {
+        if(! (Auth::user()->checkPermissionTo('delete-pengumuman') && Auth::user()->id == $pengumuman->created_by)) {
+
             return $this->error(null, 'Tidak memiliki akses untuk menghapus pengumuman', Response::HTTP_FORBIDDEN);
         }
 

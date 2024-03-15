@@ -13,8 +13,10 @@ class PermissionSeeder extends Seeder
      */
     public function run(): void
     {
+//        Module Pengumuman, PengumumanReply, Room, UserGroup
         $permissions = [
-            'view-pengumuman', 'create-pengumuman', 'edit-pengumuman',  'delete-pengumuman','reply-pengumuman',
+            'view-pengumuman', 'create-pengumuman', 'edit-pengumuman',  'delete-pengumuman',
+            'view-pengumuman-reply', 'create-pengumuman-reply', 'edit-pengumuman-reply', 'delete-pengumuman-reply',
             'view-room', 'create-room', 'edit-room', 'delete-room',
             'view-user-group', 'create-user-group', 'edit-user-group', 'delete-user-group',
         ];

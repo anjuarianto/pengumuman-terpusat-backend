@@ -23,16 +23,25 @@ Route::post('/register', [\App\Http\Controllers\Api\AuthController::class, 'regi
 Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
-    return Auth::user()->load(['roles.permissions', 'rooms' => function($query) {
-        return $query->select('id', 'name');
-    }]);
+    $user = User::with(['rooms' => function ($query) {
+        $query->select('id', 'name');
+    }])->find(Auth::user()->id);
 
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->getRoleNames()->first(),
+            'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
+            'rooms' => $user->rooms->toArray()
+        ];
 });
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::resource('pengumuman', PengumumanController::class);
     Route::resource('user-group', UserGroupController::class);
     Route::resource('room', RoomController::class);
+    Route::resource('pengumuman/{pengumuman}/reply', \App\Http\Controllers\PengumumanReplyController::class);
 
 
     Route::get('/room-member', [\App\Http\Controllers\RoomMemberController::class, 'index']);

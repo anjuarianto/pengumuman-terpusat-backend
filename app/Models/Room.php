@@ -9,6 +9,8 @@ class Room extends Model
 {
     use HasFactory;
 
+    protected $hidden = ['pivot'];
+
     protected $table = 'room';
 
     protected $fillable = [

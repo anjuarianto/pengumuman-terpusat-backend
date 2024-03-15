@@ -17,7 +17,7 @@ class RolePermissionSeeder extends Seeder
         $permissions = Permission::all();
 
         $permission_mahasiswa = [
-            'view-pengumuman', 'reply-pengumuman'
+            'view-pengumuman', 'view-pengumuman-reply', 'create-pengumuman-reply', 'edit-pengumuman-reply', 'delete-pengumuman-reply'
         ];
 
         foreach($permissions as $permission) {

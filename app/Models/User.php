@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Traits\ExtendedHasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -10,10 +9,11 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
+use Spatie\Permission\Traits\HasPermissions;
 
 class User extends Authenticatable
 {
-    use ExtendedHasApiTokens, HasFactory, Notifiable, HasRoles;
+    use ExtendedHasApiTokens, HasFactory, Notifiable, HasRoles, HasPermissions;
 
     /**
      * The attributes that are mass assignable.
@@ -55,6 +55,7 @@ class User extends Authenticatable
 
         if($firstKeyDomain == 'if') {
             $role = Role::where('name', 'dosen')->first();
+
             if ($role) {
                 $this->roles()->syncWithoutDetaching($role->id);
             }
@@ -64,7 +65,6 @@ class User extends Authenticatable
                 $this->roles()->syncWithoutDetaching($role->id);
             }
         }
-
     }
 
     public function groups()
@@ -73,6 +73,26 @@ class User extends Authenticatable
     }
 
     public function rooms() {
-        return $this->belongsToMany(Room::class, 'room_has_members', 'user_id', 'room_id');
+        return $this->belongsToMany(Room::class, 'room_has_members', 'user_id', 'room_id')->where('is_single_user', true);
+    }
+
+    public function checkPermissionTo($permission, $guardName = null): bool
+    {
+        return $this->hasPermissionTo($permission, $guardName);
+    }
+
+    public function tokenData() {
+        $user = User::with(['rooms' => function ($query) {
+            $query->select('id', 'name');
+        }])->find(Auth::user()->id);
+
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->getRoleNames()->first(),
+            'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
+            'rooms' => $user->rooms->toArray()
+        ];
     }
 }
