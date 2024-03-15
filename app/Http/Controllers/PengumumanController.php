@@ -44,7 +44,15 @@ class PengumumanController extends Controller
      */
     public function store(StorePengumumanRequest $request)
     {
+        if($request->waktu < date('Y-m-d H:i:s')) {
+            return $this->error(null, 'Waktu pengumuman tidak boleh kurang dari waktu sekarang', Response::HTTP_BAD_REQUEST);
+        }
 
+        if(in_array('create-pengumuman',  Auth::user()->getPermissionsViaRoles()->pluck('name')->toArray())) {
+            return $this->error(null, 'Tidak memiliki akses untuk membuat pengumuman', Response::HTTP_FORBIDDEN);
+        }
+
+        if(Auth::user()->id)
         $pengumuman = Pengumuman::create([
             'judul' => $request->post('judul'),
             'konten' => $request->konten,
@@ -79,6 +87,10 @@ class PengumumanController extends Controller
      */
     public function update(UpdatePengumumanRequest $request, Pengumuman $pengumuman)
     {
+        if(Auth::user()->id != $pengumuman->created_by) {
+            return $this->error(null, 'Tidak memiliki akses untuk mengedit pengumuman', Response::HTTP_FORBIDDEN);
+        }
+
         $pengumuman->update([
             'judul' => $request->judul,
             'konten' => $request->konten,
@@ -95,6 +107,10 @@ class PengumumanController extends Controller
      */
     public function destroy(Pengumuman $pengumuman)
     {
+        if(Auth::user()->id != $pengumuman->created_by) {
+            return $this->error(null, 'Tidak memiliki akses untuk menghapus pengumuman', Response::HTTP_FORBIDDEN);
+        }
+
         $pengumuman->delete();
         return $this->success(null, Response::HTTP_NO_CONTENT);
     }
