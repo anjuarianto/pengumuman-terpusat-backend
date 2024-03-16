@@ -26,17 +26,13 @@ class PengumumanController extends Controller
             return $this->error(null, 'Tidak memiliki akses untuk melihat pengumuman', Response::HTTP_FORBIDDEN);
         }
 
-        $pengumumans = Pengumuman::filterRoom($request->room_id)->filterSearch($request->search)->paginate();
+        $pengumumans = Pengumuman::filterRoom($request->room_id)->filterSearch($request->search)->orderBy('created_at', 'desc')->paginate();
 
         $pengumumans->each(function ($pengumuman) {
             $pengumuman->load('pengumumanToUsers');
 
             $pengumuman->usersFromPengumumanTo = $pengumuman->getUsersFromPengumumanToAttribute();
         });
-
-        if ($pengumumans->isEmpty()) {
-            return $this->error(null, 'No pengumuman found', Response::HTTP_NOT_FOUND);
-        }
 
         $pengumuman = PengumumanResource::collection($pengumumans)->response()->getData(true);
 
@@ -84,7 +80,7 @@ class PengumumanController extends Controller
             return $this->error(null, 'Tidak memiliki akses untuk melihat pengumuman', Response::HTTP_FORBIDDEN);
         }
 
-        $pengumuman = new PengungumanResource($pengumuman);
+        $pengumuman = new PengumumanResource($pengumuman);
         return $this->success($pengumuman);
     }
 
@@ -108,6 +104,16 @@ class PengumumanController extends Controller
             'created_by' => Auth::user()->id,
             'room_id' => $request->room_id,
         ]);
+
+        $pengumuman->pengumumanToUsers()->delete();
+
+        foreach ($request->recipients as $user_id) {
+            PengumumanTo::create([
+                'pengumuman_id' => $pengumuman->id,
+                'penerima_id' => explode('|', $user_id)[1],
+                'is_single_user' => explode('|', $user_id)[0] === '1' ? 1 : 0,
+            ]);
+        }
 
         return $this->success($pengumuman);
     }

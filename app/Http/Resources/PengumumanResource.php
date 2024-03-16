@@ -22,21 +22,16 @@ class PengumumanResource extends JsonResource
             'id' => $this->id,
             'judul' => $this->judul,
             'konten' => $this->konten,
-            'waktu' => date('d-m-Y H:i:s', strtotime($this->waktu)),
-            'room_id' => $this->room_id,
+            'waktu' => date('Y-m-d H:i:s', strtotime($this->waktu)),
+            'room' => $this->room->only('id', 'name'),
             'created_by' => $this->dibuat_oleh->name,
             'penerima' => $this->pengumumanToUsers->map(function($pengumumanTo) {
-                return ['penerima_id' => $pengumumanTo->penerima_id, 'is_single_user' => $pengumumanTo->is_single_user ? true : false];
+                return ['name' => $pengumumanTo->user->name, 'penerima_id' => $pengumumanTo->penerima_id, 'is_single_user' => $pengumumanTo->is_single_user ? true : false];
             }),
-            'penerima_fetched' => $this->usersFromPengumumanTo->map(function($user) {
-                return ['id' => $user->id, 'name' => $user->name, 'email' => $user->email];
-            }),
-            'can_reply' => in_array('reply-pengumuman',  Auth::user()->getPermissionsViaRoles()->pluck('name')->toArray()) &&
+            'can_reply' => Auth::user()->can('create-pengumuman-reply') &&
                 ($this->pengumumanToUsers->contains('penerima_id', Auth::user()->id) || $this->created_by == Auth::user()->id),
-            'can_edit' => in_array('edit-pengumuman',  Auth::user()->getPermissionsViaRoles()->pluck('name')->toArray()) &&
-                $this->created_by == Auth::user()->id,
-            'can_delete' => in_array('delete-pengumuman',  Auth::user()->getPermissionsViaRoles()->pluck('name')->toArray()) &&
-                $this->created_by == Auth::user()->id,
+            'can_edit' => Auth::user()->can('edit-pengumuman') && $this->created_by == Auth::user()->id,
+            'can_delete' => Auth::user()->can('delete-pengumuman') && $this->created_by == Auth::user()->id,
         ];
     }
 
