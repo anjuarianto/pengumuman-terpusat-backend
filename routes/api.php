@@ -23,9 +23,7 @@ Route::post('/register', [\App\Http\Controllers\Api\AuthController::class, 'regi
 Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
-    $user = User::with(['rooms' => function ($query) {
-        $query->select('id', 'name');
-    }])->find(Auth::user()->id);
+    $user = User::getMyDashboardData(Auth::user()->id);
 
         return [
             'id' => $user->id,
@@ -33,7 +31,8 @@ Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
             'email' => $user->email,
             'role' => $user->getRoleNames()->first(),
             'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
-            'rooms' => $user->rooms->toArray()
+            'rooms' => $user->rooms->toArray(),
+            'pengumuman' => $user->pengumuman->toArray(),
         ];
 });
 

@@ -29,7 +29,7 @@ class PengumumanResource extends JsonResource
                 return ['name' => $pengumumanTo->user->name, 'penerima_id' => $pengumumanTo->penerima_id, 'is_single_user' => $pengumumanTo->is_single_user ? true : false];
             }),
             'can_reply' => Auth::user()->can('create-pengumuman-reply') &&
-                ($this->pengumumanToUsers->contains('penerima_id', Auth::user()->id) || $this->created_by == Auth::user()->id),
+                ($this->usersFromPengumumanTo->contains('id', Auth::user()->id) || $this->created_by == Auth::user()->id),
             'can_edit' => Auth::user()->can('edit-pengumuman') && $this->created_by == Auth::user()->id,
             'can_delete' => Auth::user()->can('delete-pengumuman') && $this->created_by == Auth::user()->id,
         ];

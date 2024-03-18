@@ -74,4 +74,18 @@ class Pengumuman extends Model
 
         return $query;
     }
+
+    public static function getByUserId($userId)
+    {
+        return self::whereHas('pengumumanToUsers', function ($query) use ($userId) {
+            $query->where(function ($query) use ($userId) {
+                $query->where('penerima_id', $userId)
+                    ->where('is_single_user', true);
+            })->orWhere(function ($query) use ($userId) {
+                $query->whereHas('user.users', function ($query) use ($userId) {
+                    $query->where('id', $userId);
+                })->where('is_single_user', false);
+            });
+        })->get();
+    }
 }

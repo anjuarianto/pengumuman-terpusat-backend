@@ -27,7 +27,6 @@ class PengumumanTo extends Model
         } else {
             return $this->belongsTo(UserGroup::class, 'penerima_id');
         }
-
     }
 
 }

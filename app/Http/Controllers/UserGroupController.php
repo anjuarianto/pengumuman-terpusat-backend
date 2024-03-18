@@ -17,7 +17,7 @@ class UserGroupController extends Controller
      */
     public function index()
     {
-        $userGroup = UserGroup::get();
+        $userGroup = UserGroup::with('users')->get();
 
         if ($userGroup->isEmpty()) {
             return $this->error(null, 'No data found', Response::HTTP_NOT_FOUND);

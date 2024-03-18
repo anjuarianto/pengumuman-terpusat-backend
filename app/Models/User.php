@@ -6,6 +6,7 @@ use App\Traits\ExtendedHasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
@@ -81,18 +82,19 @@ class User extends Authenticatable
         return $this->hasPermissionTo($permission, $guardName);
     }
 
-    public function tokenData() {
+    public static function getMyDashboardData($user_id) {
         $user = User::with(['rooms' => function ($query) {
             $query->select('id', 'name');
-        }])->find(Auth::user()->id);
+        }])->find($user_id);
 
-        return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->getRoleNames()->first(),
-            'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
-            'rooms' => $user->rooms->toArray()
-        ];
+        $pengumumans = Pengumuman::getByUserId($user_id)->map(function ($pengumuman) {
+
+            return $pengumuman->only(['id', 'judul', 'waktu']);
+        });
+
+        $user->pengumuman = $pengumumans;
+
+        return $user;
+
     }
 }

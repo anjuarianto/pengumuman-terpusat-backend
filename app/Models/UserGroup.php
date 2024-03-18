@@ -20,6 +20,11 @@ class UserGroup extends Model
         return $this->belongsToMany(User::class, 'user_group_has_user', 'user_group_id', 'user_id');
     }
 
+//    public function user()
+//    {
+//        return $this->hasMany(User::class, 'user_group_id');
+//    }
+
     public function pengumumanTo() {
         return $this->hasMany(PengumumanTo::class, 'penerima_id');
     }
