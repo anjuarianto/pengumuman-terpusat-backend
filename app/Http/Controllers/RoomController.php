@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreRoomRequest;
 use App\Http\Requests\UpdateRoomRequest;
 use App\Http\Resources\RoomResource;
+use App\Models\PengumumanTo;
 use App\Models\Room;
+use App\Models\RoomHasMembers;
 use App\Traits\HttpResponses;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class RoomController extends Controller
 {
@@ -18,6 +21,9 @@ class RoomController extends Controller
      */
     public function index()
     {
+        if(Auth::user()->cannot('view-room', Room::class)) {
+            return $this->error(null, 'You are not authorized to view a room', Response::HTTP_FORBIDDEN);
+        }
         $rooms = Room::all();
 
         if ($rooms->isEmpty()) {
@@ -32,11 +38,28 @@ class RoomController extends Controller
      */
     public function store(StoreRoomRequest $request)
     {
+        if(Auth::user()->cannot('create-room', Room::class)) {
+            return $this->error(null, 'You are not authorized to create a room', Response::HTTP_FORBIDDEN);
+        }
+
         $room = Room::create([
-            'name' => $request->name
+            'name' => $request->name,
+            'description' => $request->description
         ]);
 
-        return $this->success(new RoomResource($room), Response::HTTP_CREATED);
+
+        if(!empty($request->members)) {
+            foreach ($request->members as $member) {
+                RoomHasMembers::create([
+                    'room_id' => $room->id,
+                    'user_id' => explode('|', $member)[1],
+                    'is_single_user' => explode('|', $member)[0] === '1' ? 1 : 0,
+                ]);
+            }
+        }
+
+
+        return $this->success(new RoomResource($room), Response::HTTP_CREATED, 'Room created successfully');
     }
 
     /**
@@ -44,12 +67,13 @@ class RoomController extends Controller
      */
     public function show(Room $room)
     {
+        if(Auth::user()->cannot('view-room', Room::class)) {
+            return $this->error(null, 'You are not authorized to view a room', Response::HTTP_FORBIDDEN);
+        }
 
         $room->usersFromRoom = $room->getUsersFromRoomAttribute();
 
-//        return $room;
-
-        return $this->success(new RoomResource($room));
+        return $this->success(new RoomResource($room), Response::HTTP_OK, 'Room found');
     }
 
     /**
@@ -57,12 +81,16 @@ class RoomController extends Controller
      */
     public function update(UpdateRoomRequest $request, Room $room)
     {
+        if(Auth::user()->cannot('edit-room', Room::class)) {
+            return $this->error(null, 'You are not authorized to update a room', Response::HTTP_FORBIDDEN);
+        }
+
         $room->update([
             'name' => $request->name,
-            // Add other fields as needed
+            'description' => $request->description
         ]);
 
-        return $this->success(new RoomResource($room));
+        return $this->success(new RoomResource($room), Response::HTTP_ACCEPTED, 'Room updated successfully');
     }
 
     /**
@@ -70,6 +98,10 @@ class RoomController extends Controller
      */
     public function destroy(Room $room)
     {
+        if(Auth::user()->cannot('delete-room', Room::class)) {
+            return $this->error(null, 'You are not authorized to view a room', Response::HTTP_FORBIDDEN);
+        }
+
         $room->delete();
 
         return $this->success(null, Response::HTTP_NO_CONTENT);

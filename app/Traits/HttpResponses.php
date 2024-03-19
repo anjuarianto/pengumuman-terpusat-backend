@@ -6,10 +6,11 @@ namespace App\Traits;
 use Illuminate\Http\Response;
 
 trait HttpResponses {
-    protected function success($data, $code = Response::HTTP_OK): \Illuminate\Http\JsonResponse
+    protected function success($data, $code = Response::HTTP_OK, $message = null): \Illuminate\Http\JsonResponse
     {
         return response()->json([
             'status' => 'success',
+            'message' => $message,
             'data' => $data
         ], $code);
     }
