@@ -15,6 +15,12 @@ class RoomSeeder extends Seeder
      */
     public function run(): void
     {
+        Room::create([
+            'id' => 1,
+            'name' => 'General',
+            'description' => 'Ini adalah room general'
+        ]);
+
         Room::factory(10)->create();
 
         $rooms = Room::all();

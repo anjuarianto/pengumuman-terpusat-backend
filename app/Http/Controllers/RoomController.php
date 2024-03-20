@@ -90,6 +90,18 @@ class RoomController extends Controller
             'description' => $request->description
         ]);
 
+        RoomHasMembers::where('room_id', $room->id)->delete();
+
+        if(!empty($request->members)) {
+            foreach ($request->members as $member) {
+                RoomHasMembers::create([
+                    'room_id' => $room->id,
+                    'user_id' => explode('|', $member)[1],
+                    'is_single_user' => explode('|', $member)[0] === '1' ? 1 : 0,
+                ]);
+            }
+        }
+
         return $this->success(new RoomResource($room), Response::HTTP_ACCEPTED, 'Room updated successfully');
     }
 
