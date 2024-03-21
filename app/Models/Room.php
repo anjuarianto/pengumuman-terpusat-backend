@@ -25,6 +25,7 @@ class Room extends Model
     {
         $usersCollection = collect([]);
 
+
         $this->members->each(function ($roomMembers) use ($usersCollection) {
             if ($roomMembers->is_single_user) {
                 $user = User::find($roomMembers->user_id);

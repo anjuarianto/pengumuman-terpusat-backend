@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Room;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,7 +32,7 @@ Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
             'email' => $user->email,
             'role' => $user->getRoleNames()->first(),
             'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
-            'rooms' => $user->rooms->toArray(),
+            'rooms' => Auth::user()->hasRole('dosen') ? Room::select('id', 'name')->get()->toArray() : $user->rooms->toArray(),
             'pengumuman' => $user->pengumuman->toArray(),
         ];
 });
