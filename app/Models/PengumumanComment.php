@@ -14,5 +14,10 @@ class PengumumanComment extends Model
     protected $fillable = [
         'pengumuman_id', 'user_id', 'comment'
     ];
-    
+
+
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

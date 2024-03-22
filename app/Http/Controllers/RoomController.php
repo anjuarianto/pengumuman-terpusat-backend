@@ -58,7 +58,6 @@ class RoomController extends Controller
             }
         }
 
-
         return $this->success(new RoomResource($room), Response::HTTP_CREATED, 'Room created successfully');
     }
 
