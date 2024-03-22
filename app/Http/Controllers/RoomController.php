@@ -21,7 +21,7 @@ class RoomController extends Controller
      */
     public function index()
     {
-        if(Auth::user()->cannot('view-room', Room::class)) {
+        if (Auth::user()->cannot('view-room', Room::class)) {
             return $this->error(null, 'You are not authorized to view a room', Response::HTTP_FORBIDDEN);
         }
         $rooms = Room::all();
@@ -38,7 +38,7 @@ class RoomController extends Controller
      */
     public function store(StoreRoomRequest $request)
     {
-        if(Auth::user()->cannot('create-room', Room::class)) {
+        if (Auth::user()->cannot('create-room', Room::class)) {
             return $this->error(null, 'You are not authorized to create a room', Response::HTTP_FORBIDDEN);
         }
 
@@ -48,7 +48,7 @@ class RoomController extends Controller
         ]);
 
 
-        if(!empty($request->members)) {
+        if (!empty($request->members)) {
             foreach ($request->members as $member) {
                 RoomHasMembers::create([
                     'room_id' => $room->id,
@@ -67,7 +67,7 @@ class RoomController extends Controller
      */
     public function show(Room $room)
     {
-        if(Auth::user()->cannot('view-room', Room::class)) {
+        if (Auth::user()->cannot('view-room', Room::class)) {
             return $this->error(null, 'You are not authorized to view a room', Response::HTTP_FORBIDDEN);
         }
 
@@ -81,9 +81,14 @@ class RoomController extends Controller
      */
     public function update(UpdateRoomRequest $request, Room $room)
     {
-        if(Auth::user()->cannot('edit-room', Room::class)) {
+        if (Auth::user()->cannot('edit-room', Room::class)) {
             return $this->error(null, 'You are not authorized to update a room', Response::HTTP_FORBIDDEN);
         }
+
+        if ($room->id === Room::GENERAL_ROOM_ID) {
+            return $this->error(null, 'You are not authorized to update a general room', Response::HTTP_FORBIDDEN);
+        }
+
 
         $room->update([
             'name' => $request->name,
@@ -92,7 +97,7 @@ class RoomController extends Controller
 
         RoomHasMembers::where('room_id', $room->id)->delete();
 
-        if(!empty($request->members)) {
+        if (!empty($request->members)) {
             foreach ($request->members as $member) {
                 RoomHasMembers::create([
                     'room_id' => $room->id,
@@ -110,8 +115,12 @@ class RoomController extends Controller
      */
     public function destroy(Room $room)
     {
-        if(Auth::user()->cannot('delete-room', Room::class)) {
+        if (Auth::user()->cannot('delete-room', Room::class)) {
             return $this->error(null, 'You are not authorized to view a room', Response::HTTP_FORBIDDEN);
+        }
+
+        if ($room->id === Room::GENERAL_ROOM_ID) {
+            return $this->error(null, 'You are not authorized to delete a general room', Response::HTTP_FORBIDDEN);
         }
 
         $room->delete();

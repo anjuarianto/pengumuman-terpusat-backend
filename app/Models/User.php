@@ -47,6 +47,25 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    protected static $rolesIdentify = [
+        'dosen' => '@if.itera.ac.id',
+        'mahasiswa' => '@student.itera.ac.id'
+    ];
+
+    public function getRoleBasedOnEmailDomain()
+    {
+        $email = $this->email;
+        $domain = substr(strrchr($email, "@"), 1); // Extract domain from email
+
+        $firstKeyDomain = explode('.', $domain)[0];
+
+        if ($firstKeyDomain == 'if') {
+            return 'dosen';
+        } else if ($firstKeyDomain == 'student') {
+            return 'mahasiswa';
+        }
+    }
+
     public function assignRoleBasedOnEmailDomain()
     {
         $email = $this->email;
@@ -54,13 +73,13 @@ class User extends Authenticatable
 
         $firstKeyDomain = explode('.', $domain)[0];
 
-        if($firstKeyDomain == 'if') {
+        if ($firstKeyDomain == 'if') {
             $role = Role::where('name', 'dosen')->first();
 
             if ($role) {
                 $this->roles()->syncWithoutDetaching($role->id);
             }
-        } else if($firstKeyDomain == 'student') {
+        } else if ($firstKeyDomain == 'student') {
             $role = Role::where('name', 'mahasiswa')->first();
             if ($role) {
                 $this->roles()->syncWithoutDetaching($role->id);
@@ -73,8 +92,26 @@ class User extends Authenticatable
         return $this->belongsToMany(UserGroup::class, 'user_group_has_user', 'user_id', 'user_group_id');
     }
 
-    public function rooms() {
-        return $this->belongsToMany(Room::class, 'room_has_members', 'user_id', 'room_id')->where('is_single_user', true);
+    public function rooms()
+    {
+        return $this->belongsToMany(Room::class, 'room_has_members', 'user_id', 'room_id')->where('is_single_user', true)->whereNot('id', Room::GENERAL_ROOM_ID);
+    }
+
+    public function scopeGivenRole($query, $value)
+    {
+        if (is_array($value)) {
+            foreach ($value as $role) {
+                $emailNeedle = self::$rolesIdentify[$role];
+                $query->where('email', 'LIKE', '%' . $emailNeedle . '%');
+            }
+        }
+
+        if (!is_array($value)) {
+            $emailNeedle = self::$rolesIdentify[$value];
+            $query->where('email', 'LIKE', '%' . $emailNeedle . '%');
+        }
+
+        return $query;
     }
 
     public function checkPermissionTo($permission, $guardName = null): bool
@@ -82,10 +119,17 @@ class User extends Authenticatable
         return $this->hasPermissionTo($permission, $guardName);
     }
 
-    public static function getMyDashboardData($user_id) {
+    public static function getMyDashboardData($user_id)
+    {
+
         $user = User::with(['rooms' => function ($query) {
             $query->select('id', 'name');
         }])->find($user_id);
+
+        if (Auth::user()->hasRole('dosen')) {
+            $user->pengumuman = Pengumuman::select('id', 'judul', 'waktu')->where('created_by', $user_id)->get();
+            return $user;
+        }
 
         $pengumumans = Pengumuman::getByUserId($user_id)->map(function ($pengumuman) {
 
@@ -96,5 +140,29 @@ class User extends Authenticatable
 
         return $user;
 
+    }
+
+    public static function mySession()
+    {
+        $user = self::getMyDashboardData(Auth::id());
+
+        $testing = $user->pengumuman->filter(function ($pengumuman) {
+            return $pengumuman->tanggal > date('now');
+        });
+
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->getRoleNames()->first(),
+            'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
+            'rooms' => $user->getRoleNames()->first() == 'dosen'
+                ? Room::select('id', 'name')->whereNot('id', Room::GENERAL_ROOM_ID)->get()->toArray()
+                : $user->rooms->toArray(),
+            'pengumuman' => $user->pengumuman->toArray(),
+            'upcoming_event' => $user->pengumuman->filter(function ($pengumuman) {
+                return $pengumuman->waktu > date('Y-m-d H:i:s');
+            })->values()
+        ];
     }
 }

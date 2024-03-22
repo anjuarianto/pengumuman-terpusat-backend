@@ -13,15 +13,17 @@ class RoomMemberController extends Controller
 {
     use HttpResponses;
 
-    public function index() {
-        $roomMember = Room::get();
+    public function index()
+    {
+        $roomMember = Room::whereNot('id', Room::GENERAL_ROOM_ID)->get();
 
         $roomMember = RoomMemberResource::collection($roomMember);
         return $this->success($roomMember);
     }
 
-    public function join(Request $request) {
-        if(RoomHasMembers::where('room_id', $request->room_id)->where('user_id', auth()->id())->exists()) {
+    public function join(Request $request)
+    {
+        if (RoomHasMembers::where('room_id', $request->room_id)->where('user_id', auth()->id())->exists()) {
             return $this->error(null, 'You have already joined the room', 400);
         }
 
@@ -34,8 +36,9 @@ class RoomMemberController extends Controller
         return $this->success('You have joined the room');
     }
 
-    public function unjoin(Request $request) {
-        if(!RoomHasMembers::where('room_id', $request->room_id)->where('user_id', auth()->id())->exists()) {
+    public function unjoin(Request $request)
+    {
+        if (!RoomHasMembers::where('room_id', $request->room_id)->where('user_id', auth()->id())->exists()) {
             return $this->error(null, 'No Data Found', Response::HTTP_NOT_FOUND);
         }
 
