@@ -59,15 +59,29 @@ class PengumumanReplyController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, PengumumanComment $pengumumanComment)
+    public function update(Request $request, $pengumuman_id, $id)
     {
         if (!Auth::user()->checkPermissionTo('edit-pengumuman-reply')) {
             return $this->error(null, 'Tidak memiliki akses untuk membuat balasan pengumuman', Response::HTTP_FORBIDDEN);
         }
 
-        $pengumumanComment->update([
+
+        $comment = PengumumanComment::find($id);
+
+        if (!$comment) {
+            return $this->error(null, 'Balasan pengumuman tidak ditemukan', Response::HTTP_NOT_FOUND);
+        }
+
+        if ($comment->user_id != Auth::user()->id) {
+            return $this->error(null, 'Tidak memiliki akses untuk update balasan pengumuman', Response::HTTP_FORBIDDEN);
+        }
+
+
+        $comment->update([
             'comment' => $request->comment
         ]);
+
+        return $this->success(new PengumumanReplyResource($comment), Response::HTTP_ACCEPTED, 'Balasan pengumuman berhasil diupdate');
     }
 
     /**
@@ -85,8 +99,7 @@ class PengumumanReplyController extends Controller
             return $this->error(null, 'Balasan pengumuman tidak ditemukan', Response::HTTP_NOT_FOUND);
         }
 
-        echo Auth::user()->id;
-        die;
+
         if ($pengumumanComment->user_id != Auth::user()->id) {
             return $this->error(null, 'Tidak memiliki akses untuk menghapus balasan pengumuman', Response::HTTP_FORBIDDEN);
         }

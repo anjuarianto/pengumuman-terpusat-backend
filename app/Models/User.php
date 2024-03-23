@@ -155,7 +155,7 @@ class User extends Authenticatable
             'rooms' => $user->rooms->toArray(),
             'pengumuman' => $user->pengumuman->toArray(),
             'upcoming_event' => $user->pengumuman->filter(function ($pengumuman) {
-                return $pengumuman->waktu > date('Y-m-d H:i:s');
+                return $pengumuman['waktu'] > date('Y-m-d H:i:s');
             })->values()
         ];
     }

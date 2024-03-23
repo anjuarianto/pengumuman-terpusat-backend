@@ -42,7 +42,7 @@ class Pengumuman extends Model
 
         return $usersCollection->flatten();
     }
-
+    
     public function dibuat_oleh(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'id');
@@ -53,22 +53,24 @@ class Pengumuman extends Model
         return $this->belongsTo(Room::class, 'room_id', 'id');
     }
 
-    public static function scopeFilterSearch($query, $value) {
-        $query->whereHas('dibuat_oleh', function($query) use ($value) {
-            return $query->where("name", "LIKE", "%".$value."%");
+    public static function scopeFilterSearch($query, $value)
+    {
+        $query->whereHas('dibuat_oleh', function ($query) use ($value) {
+            return $query->where("name", "LIKE", "%" . $value . "%");
         });
-        $query->orWhereHas('room', function($query) use ($value) {
-            return $query->where("name", "LIKE", "%".$value."%");
+        $query->orWhereHas('room', function ($query) use ($value) {
+            return $query->where("name", "LIKE", "%" . $value . "%");
         });
-        $query->orwhere('judul', 'LIKE', '%'.$value.'%');
-        $query->orWhere('konten', 'LIKE', '%'.$value.'%');
-        $query->orWhere('waktu', 'LIKE', '%'.$value.'%');
+        $query->orwhere('judul', 'LIKE', '%' . $value . '%');
+        $query->orWhere('konten', 'LIKE', '%' . $value . '%');
+        $query->orWhere('waktu', 'LIKE', '%' . $value . '%');
 
         return $query;
     }
 
-    public static function scopeFilterRoom($query, $room_id) {
-        if($room_id) {
+    public static function scopeFilterRoom($query, $room_id)
+    {
+        if ($room_id) {
             $query->where('room_id', $room_id);
         }
 
@@ -87,5 +89,17 @@ class Pengumuman extends Model
                 })->where('is_single_user', false);
             });
         })->get();
+    }
+
+    public static function notificationDaily()
+    {
+        $pengumumans = Pengumuman::whereDay('waktu', '=', now()->addDay(1))->get();
+        $pengumumans->each(function ($pengumuman) {
+            $pengumuman->load('pengumumanToUsers');
+
+            $pengumuman->usersFromPengumumanTo = $pengumuman->getUsersFromPengumumanToAttribute();
+        });
+
+        return $pengumumans;
     }
 }
