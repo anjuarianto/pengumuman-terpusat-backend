@@ -20,7 +20,9 @@ class RoomResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'members' => $this->id == 1 ? User::all()->map(function($user) {return ['id' => $user->id, 'name' => $user->name, 'is_single_user' => '1'];}) : $this->usersFromRoom->map(function($user) {
+            'members' => $this->id == 1 ? User::all()->map(function ($user) {
+                return ['id' => $user->id, 'name' => $user->name . ' (' . ucfirst($user->getRoleBasedOnEmailDomain()) . ')', 'is_single_user' => '1'];
+            }) : $this->usersFromRoom->map(function ($user) {
                 return ['id' => $user->id, 'name' => $user->name, 'is_single_user' => $user->is_single_user];
             })
         ];

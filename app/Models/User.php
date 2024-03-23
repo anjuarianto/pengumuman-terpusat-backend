@@ -146,19 +146,13 @@ class User extends Authenticatable
     {
         $user = self::getMyDashboardData(Auth::id());
 
-        $testing = $user->pengumuman->filter(function ($pengumuman) {
-            return $pengumuman->tanggal > date('now');
-        });
-
         return [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'role' => $user->getRoleNames()->first(),
             'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
-            'rooms' => $user->getRoleNames()->first() == 'dosen'
-                ? Room::select('id', 'name')->whereNot('id', Room::GENERAL_ROOM_ID)->get()->toArray()
-                : $user->rooms->toArray(),
+            'rooms' => $user->rooms->toArray(),
             'pengumuman' => $user->pengumuman->toArray(),
             'upcoming_event' => $user->pengumuman->filter(function ($pengumuman) {
                 return $pengumuman->waktu > date('Y-m-d H:i:s');

@@ -24,7 +24,7 @@ class RoomController extends Controller
         if (Auth::user()->cannot('view-room', Room::class)) {
             return $this->error(null, 'You are not authorized to view a room', Response::HTTP_FORBIDDEN);
         }
-        $rooms = Room::all();
+        $rooms = Room::whereNot('id', Room::GENERAL_ROOM_ID)->get();
 
         if ($rooms->isEmpty()) {
             return $this->error(null, 'No rooms found', Response::HTTP_NOT_FOUND);
