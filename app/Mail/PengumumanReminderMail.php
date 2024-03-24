@@ -13,14 +13,12 @@ class PengumumanReminderMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    private $data;
-
     /**
      * Create a new message instance.
      */
-    public function __construct($pengumuman)
+    public function __construct()
     {
-        $this->data = $pengumuman;
+        //
     }
 
     /**
@@ -39,14 +37,7 @@ class PengumumanReminderMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            htmlString: '<h1>Reminder Pengumuman</h1>
-                        <p>
-                            Pengirim: ' . $this->data->dibuat_oleh->name . '<br>
-                            Judul: ' . $this->data->judul . '<br>
-                            Tanggal Dikirim: ' . $this->data->created_at->format('d-m-Y H:i:s') . '<br>
-                            Tanggal Deadline: ' . date('d-m-Y', strtotime($this->data->waktu)) . '<br>
-                            Ini adalah reminder pengumuman
-                        </p>',
+            htmlString: 'view.name',
         );
     }
 

@@ -42,7 +42,7 @@ class Pengumuman extends Model
 
         return $usersCollection->flatten();
     }
-    
+
     public function dibuat_oleh(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'id');
@@ -93,13 +93,23 @@ class Pengumuman extends Model
 
     public static function notificationDaily()
     {
-        $pengumumans = Pengumuman::whereDay('waktu', '=', now()->addDay(1))->get();
-        $pengumumans->each(function ($pengumuman) {
+        $result = collect([]);
+        $kondisiHari = [7, 3, 1];
+
+        foreach ($kondisiHari as $hari) {
+            $pengumumans = Pengumuman::whereDay('waktu', '=', now()->addDay($hari))->get();
+            $pengumumans = $pengumumans->map(function ($pengumuman) use ($result, $hari) {
+                $pengumuman->type = $hari . ' Day';
+                $result->push($pengumuman);
+            });
+        }
+        
+        $result->each(function ($pengumuman) {
             $pengumuman->load('pengumumanToUsers');
 
             $pengumuman->usersFromPengumumanTo = $pengumuman->getUsersFromPengumumanToAttribute();
         });
 
-        return $pengumumans;
+        return $result;
     }
 }

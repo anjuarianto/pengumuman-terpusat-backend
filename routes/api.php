@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Notifications\ReminderPengumuman;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +22,13 @@ use App\Models\User;
 
 Route::post('/register', [\App\Http\Controllers\Api\AuthController::class, 'register']);
 Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
+Route::get('/test', function () {
+    $pengumuman = \App\Models\Pengumuman::notificationDaily()[0];
+//    return $pengumuman;
+    if ($pengumuman) {
+        return (new ReminderPengumuman($pengumuman))->toMail($pengumuman->dibuat_oleh);
+    }
+});
 
 Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
     return User::mySession();

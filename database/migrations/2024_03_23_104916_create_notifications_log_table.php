@@ -11,7 +11,6 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('notifications_log', function (Blueprint $table) {
-            $table->string('email')->unique();
             $table->unsignedBigInteger('pengumuman_id');
             $table->string('type');
             $table->dateTime('sent_at');
