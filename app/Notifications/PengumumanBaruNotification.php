@@ -2,15 +2,12 @@
 
 namespace App\Notifications;
 
-use App\Mail\PengumumanReminderMail;
-use App\Models\Pengumuman;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\URL;
 
-class ReminderPengumuman extends Notification
+class PengumumanBaruNotification extends Notification
 {
     use Queueable;
 
@@ -41,7 +38,7 @@ class ReminderPengumuman extends Notification
     {
         return (new MailMessage)
             ->greeting(' ')
-            ->line('Berikut adalah notifikasi pengingat pengumuman dengan detail sebagai berikut: ')
+            ->line('Terdapat pengumuman baru yang ditujukan pada anda, dengan detail berikut: ')
             ->line('Pengirim: ' . $this->pengumuman->dibuat_oleh->name)
             ->line('Judul: ' . $this->pengumuman->judul)
             ->line('Tanggal Dikirim: ' . $this->pengumuman->created_at->format('d-m-Y H:i:s'))

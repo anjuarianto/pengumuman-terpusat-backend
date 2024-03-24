@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class Pengumuman extends Model
 {
@@ -94,16 +96,26 @@ class Pengumuman extends Model
     public static function notificationDaily()
     {
         $result = collect([]);
-        $kondisiHari = [7, 3, 1];
+        $kondisiHari = [0, 1, 3, 7];
+
 
         foreach ($kondisiHari as $hari) {
-            $pengumumans = Pengumuman::whereDay('waktu', '=', now()->addDay($hari))->get();
-            $pengumumans = $pengumumans->map(function ($pengumuman) use ($result, $hari) {
+            $now = now();
+            $now->setTimezone('Asia/Jakarta');
+            $now->addDays($hari);
+
+            $pengumumans = Pengumuman::whereYear('waktu', $now->year)
+                ->whereMonth('waktu', $now->month)
+                ->whereDay('waktu', $now->day)
+                ->where(DB::raw('MINUTE(waktu)'), $now->minute)
+                ->get();
+
+            $pengumumans->map(function ($pengumuman) use ($result, $hari) {
                 $pengumuman->type = $hari . ' Day';
                 $result->push($pengumuman);
             });
         }
-        
+
         $result->each(function ($pengumuman) {
             $pengumuman->load('pengumumanToUsers');
 

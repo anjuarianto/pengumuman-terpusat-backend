@@ -7,22 +7,25 @@ use App\Http\Requests\UpdatePengumumanRequest;
 use App\Http\Resources\PaginateResource;
 use App\Http\Resources\PengumumanResource;
 use App\Http\Resources\PengungumanResource;
+use App\Jobs\KirimEmailPengumumanBaruJob;
 use App\Models\Pengumuman;
 use App\Models\PengumumanTo;
 use App\Traits\HttpResponses;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 
 class PengumumanController extends Controller
 {
     use HttpResponses;
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        if(!Auth::user()->checkPermissionTo('view-pengumuman')) {
+        if (!Auth::user()->checkPermissionTo('view-pengumuman')) {
             return $this->error(null, 'Tidak memiliki akses untuk melihat pengumuman', Response::HTTP_FORBIDDEN);
         }
 
@@ -34,6 +37,12 @@ class PengumumanController extends Controller
             $pengumuman->usersFromPengumumanTo = $pengumuman->getUsersFromPengumumanToAttribute();
         });
 
+
+        $pengumumans = $pengumumans->filter(function ($pengumuman) {
+            return in_array(Auth::user()->email, $pengumuman->usersFromPengumumanTo->pluck('email')->toArray()) || Auth::user()->id == $pengumuman->created_by;
+        })->values();
+
+
         $pengumuman = PengumumanResource::collection($pengumumans)->response()->getData(true);
 
         return $this->success($pengumuman);
@@ -44,11 +53,11 @@ class PengumumanController extends Controller
      */
     public function store(StorePengumumanRequest $request)
     {
-        if(!Auth::user()->checkPermissionTo('create-pengumuman')) {
+        if (!Auth::user()->checkPermissionTo('create-pengumuman')) {
             return $this->error(null, 'Tidak memiliki akses untuk membuat pengumuman', Response::HTTP_FORBIDDEN);
         }
 
-        if($request->waktu < date('Y-m-d H:i:s')) {
+        if ($request->waktu < date('Y-m-d H:i:s')) {
             return $this->error(null, 'Waktu pengumuman tidak boleh kurang dari waktu sekarang', Response::HTTP_BAD_REQUEST);
         }
 
@@ -68,6 +77,8 @@ class PengumumanController extends Controller
             ]);
         }
 
+        KirimEmailPengumumanBaruJob::dispatch($pengumuman)->onQueue('default');
+
         return $this->success($pengumuman, Response::HTTP_CREATED);
     }
 
@@ -76,7 +87,7 @@ class PengumumanController extends Controller
      */
     public function show(Pengumuman $pengumuman)
     {
-        if(!Auth::user()->checkPermissionTo('view-pengumuman')) {
+        if (!Auth::user()->checkPermissionTo('view-pengumuman')) {
             return $this->error(null, 'Tidak memiliki akses untuk melihat pengumuman', Response::HTTP_FORBIDDEN);
         }
 
@@ -89,11 +100,11 @@ class PengumumanController extends Controller
      */
     public function update(UpdatePengumumanRequest $request, Pengumuman $pengumuman)
     {
-        if( !(Auth::user()->checkPermissionTo('edit-pengumuman') && Auth::user()->id == $pengumuman->created_by) ) {
+        if (!(Auth::user()->checkPermissionTo('edit-pengumuman') && Auth::user()->id == $pengumuman->created_by)) {
             return $this->error(null, 'Tidak memiliki akses untuk mengedit pengumuman', Response::HTTP_FORBIDDEN);
         }
 
-        if($request->waktu < date('Y-m-d H:i:s')) {
+        if ($request->waktu < date('Y-m-d H:i:s')) {
             return $this->error(null, 'Waktu pengumuman tidak boleh kurang dari waktu sekarang', Response::HTTP_BAD_REQUEST);
         }
 
@@ -123,7 +134,7 @@ class PengumumanController extends Controller
      */
     public function destroy(Pengumuman $pengumuman)
     {
-        if(! (Auth::user()->checkPermissionTo('delete-pengumuman') && Auth::user()->id == $pengumuman->created_by)) {
+        if (!(Auth::user()->checkPermissionTo('delete-pengumuman') && Auth::user()->id == $pengumuman->created_by)) {
 
             return $this->error(null, 'Tidak memiliki akses untuk menghapus pengumuman', Response::HTTP_FORBIDDEN);
         }

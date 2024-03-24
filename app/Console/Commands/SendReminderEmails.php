@@ -31,6 +31,16 @@ class SendReminderEmails extends Command
     {
 
         $pengumumanList = Pengumuman::notificationDaily();
-        ReminderPengumumanJob::dispatch($pengumumanList);
+
+        if ($pengumumanList) {
+            foreach ($pengumumanList as $pengumuman) {
+                $now = now()->timezone('Asia/Jakarta');
+
+                ReminderPengumumanJob::dispatch($pengumuman, $pengumuman->type)->onQueue('default')->delay($now);
+            }
+        } else {
+            $this->info('No pengumuman to send');
+        }
+
     }
 }
