@@ -20,6 +20,16 @@ use App\Notifications\ReminderPengumuman;
 |
 */
 
+Route::post('/upload', function () {
+    $path = request()->file('upload')->store('public');
+
+    $url = str_replace('public', 'storage', $path);
+    return [
+        'path' => $path,
+        'url' => URL::to($url)
+    ];
+});
+
 Route::post('/register', [\App\Http\Controllers\Api\AuthController::class, 'register']);
 Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
 Route::get('/test', function () {
