@@ -25,13 +25,17 @@ class PengumumanResource extends JsonResource
             'waktu' => date('Y-m-d H:i:s', strtotime($this->waktu)),
             'room' => $this->room->only('id', 'name'),
             'created_by' => $this->dibuat_oleh->name,
-            'penerima' => $this->pengumumanToUsers->map(function($pengumumanTo) {
-                return ['name' => $pengumumanTo->user->name, 'penerima_id' => $pengumumanTo->penerima_id, 'is_single_user' => $pengumumanTo->is_single_user ? true : false];
+            'penerima' => $this->pengumumanToUsers->map(function ($pengumumanTo) {
+                return ['name' => $pengumumanTo->is_single_user ? $pengumumanTo->user->name : $pengumumanTo->userGroup->name, 'penerima_id' => $pengumumanTo->penerima_id, 'is_single_user' => $pengumumanTo->is_single_user ? true : false];
+            }),
+            'files' => $this->files->map(function ($file) {
+                return ['file' => $file->file, 'original_name' => $file->original_name];
             }),
             'can_reply' => Auth::user()->can('create-pengumuman-reply') &&
                 ($this->usersFromPengumumanTo->contains('id', Auth::user()->id) || $this->created_by == Auth::user()->id),
             'can_edit' => Auth::user()->can('edit-pengumuman') && $this->created_by == Auth::user()->id,
             'can_delete' => Auth::user()->can('delete-pengumuman') && $this->created_by == Auth::user()->id,
+            'created_at' => date('Y-m-d H:i:s', strtotime($this->created_at)),
         ];
     }
 

@@ -14,6 +14,7 @@ use App\Traits\HttpResponses;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 class PengumumanController extends Controller
@@ -29,19 +30,20 @@ class PengumumanController extends Controller
             return $this->error(null, 'Tidak memiliki akses untuk melihat pengumuman', Response::HTTP_FORBIDDEN);
         }
 
-        $pengumumans = Pengumuman::filterRoom($request->room_id)->filterSearch($request->search)->orderBy('created_at', 'desc')->paginate();
+        $pengumumans = Pengumuman::filterRoom($request->room_id)
+            ->filterSearch($request->search)
+            ->filterDate($request->min_date, $request->max_date)
+            ->filterPengirim($request->pengirim)
+            ->filterPenerima($request->penerima_id)
+            ->filterFile($request->file_name)
+            ->orderBy('created_at', $request->order ?? 'desc')
+            ->paginate();
 
         $pengumumans->each(function ($pengumuman) {
             $pengumuman->load('pengumumanToUsers');
 
             $pengumuman->usersFromPengumumanTo = $pengumuman->getUsersFromPengumumanToAttribute();
         });
-
-
-        $pengumumans = $pengumumans->filter(function ($pengumuman) {
-            return in_array(Auth::user()->email, $pengumuman->usersFromPengumumanTo->pluck('email')->toArray()) || Auth::user()->id == $pengumuman->created_by;
-        })->values();
-
 
         $pengumuman = PengumumanResource::collection($pengumumans)->response()->getData(true);
 
@@ -61,20 +63,38 @@ class PengumumanController extends Controller
             return $this->error(null, 'Waktu pengumuman tidak boleh kurang dari waktu sekarang', Response::HTTP_BAD_REQUEST);
         }
 
-        $pengumuman = Pengumuman::create([
-            'judul' => $request->post('judul'),
-            'konten' => $request->konten,
-            'waktu' => $request->waktu,
-            'created_by' => Auth::user()->id,
-            'room_id' => $request->room_id,
-        ]);
+        DB::beginTransaction();
 
-        foreach ($request->recipients as $recipient) {
-            PengumumanTo::create([
-                'pengumuman_id' => $pengumuman->id,
-                'penerima_id' => explode('|', $recipient)[1],
-                'is_single_user' => explode('|', $recipient)[0] === '1' ? 1 : 0,
+        try {
+            $pengumuman = Pengumuman::create([
+                'judul' => $request->judul,
+                'konten' => $request->konten,
+                'waktu' => $request->waktu,
+                'created_by' => Auth::user()->id,
+                'room_id' => $request->room_id,
             ]);
+
+            foreach ($request->recipients as $recipient) {
+                PengumumanTo::create([
+                    'pengumuman_id' => $pengumuman->id,
+                    'penerima_id' => explode('|', $recipient)[1],
+                    'is_single_user' => explode('|', $recipient)[0] === '1' ? 1 : 0,
+                ]);
+            }
+
+            foreach ($request->attachment as $file) {
+
+                $pengumuman->files()->create([
+                    'file' => $file->hashName(),
+                    'original_name' => $file->getClientOriginalName()
+                ]);
+            }
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->error($e->getMessage(), 'Gagal membuat pengumuman', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         KirimEmailPengumumanBaruJob::dispatch($pengumuman)->onQueue('default');

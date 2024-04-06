@@ -21,12 +21,14 @@ class PengumumanTo extends Model
         return $this->belongsTo(Pengumuman::class, 'pengumuman_id');
     }
 
-    public function user(){
-        if($this->is_single_user) {
-            return $this->belongsTo(User::class, 'penerima_id');
-        } else {
-            return $this->belongsTo(UserGroup::class, 'penerima_id');
-        }
+    public function userGroup()
+    {
+        return $this->belongsTo(UserGroup::class, 'penerima_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'penerima_id');
     }
 
 }
