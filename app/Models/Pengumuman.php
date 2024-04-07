@@ -176,10 +176,14 @@ class Pengumuman extends Model
     public static function getByUserId($userId)
     {
         return self::whereHas('pengumumanToUsers', function ($query) use ($userId) {
-            $query->where('penerima_id', $userId)
-                ->orWhereHas('user.users', function ($query) use ($userId) {
+            $query->where(function ($query) use ($userId) {
+                $query->where('penerima_id', $userId)
+                    ->where('is_single_user', true);
+            })->orWhere(function ($query) use ($userId) {
+                $query->whereHas('userGroup', function ($query) use ($userId) {
                     $query->where('id', $userId);
-                });
+                })->where('is_single_user', false);
+            });
         })->get();
     }
 
