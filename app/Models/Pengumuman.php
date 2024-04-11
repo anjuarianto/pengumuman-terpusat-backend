@@ -140,7 +140,7 @@ class Pengumuman extends Model
     {
         if ($pengirim) {
             $query->whereHas('dibuat_oleh', function ($query) use ($pengirim) {
-                return $query->where("name", "LIKE", "%" . $pengirim . "%");
+                return $query->where("id", $pengirim);
             });
         }
 
@@ -185,6 +185,20 @@ class Pengumuman extends Model
                 })->where('is_single_user', false);
             });
         })->get();
+    }
+
+    public static function getByUserIdAndDate($userId, $date)
+    {
+        return self::whereHas('pengumumanToUsers', function ($query) use ($userId) {
+            $query->where(function ($query) use ($userId) {
+                $query->where('penerima_id', $userId)
+                    ->where('is_single_user', true);
+            })->orWhere(function ($query) use ($userId) {
+                $query->whereHas('userGroup', function ($query) use ($userId) {
+                    $query->where('id', $userId);
+                })->where('is_single_user', false);
+            });
+        })->whereDate('waktu', $date)->get();
     }
 
     public static function notificationDaily()

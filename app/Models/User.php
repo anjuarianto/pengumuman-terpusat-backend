@@ -52,9 +52,8 @@ class User extends Authenticatable
         'mahasiswa' => '@student.itera.ac.id'
     ];
 
-    public function getRoleBasedOnEmailDomain()
+    public static function getRoleBasedOnEmailDomain($email)
     {
-        $email = $this->email;
         $domain = substr(strrchr($email, "@"), 1); // Extract domain from email
 
         $firstKeyDomain = explode('.', $domain)[0];

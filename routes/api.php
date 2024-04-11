@@ -7,7 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use App\Notifications\ReminderPengumuman;
+use App\Http\Controllers\MyPengumumanController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,13 +33,6 @@ Route::post('/upload', function () {
 
 Route::post('/register', [\App\Http\Controllers\Api\AuthController::class, 'register']);
 Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
-Route::get('/test', function () {
-    $pengumuman = \App\Models\Pengumuman::notificationDaily()[0];
-//    return $pengumuman;
-    if ($pengumuman) {
-        return (new ReminderPengumuman($pengumuman))->toMail($pengumuman->dibuat_oleh);
-    }
-});
 
 Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
     return User::mySession();
@@ -50,13 +44,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::resource('room', RoomController::class);
     Route::resource('pengumuman/{pengumuman}/reply', \App\Http\Controllers\PengumumanReplyController::class);
 
+    Route::get('/my-pengumuman/{date}', MyPengumumanController::class);
 
     Route::get('/room-member', [\App\Http\Controllers\RoomMemberController::class, 'index']);
     Route::post('/room-member/join', [\App\Http\Controllers\RoomMemberController::class, 'join']);
     Route::post('/room-member/unjoin', [\App\Http\Controllers\RoomMemberController::class, 'unjoin']);
 
-    Route::get('/user', function () {
-        return User::all();
+    Route::resource('/user', UserController::class);
+
+    Route::get('/user/dosen', function () {
+        return User::where('role', 'dosen')->get();
     });
 
     Route::post('/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
