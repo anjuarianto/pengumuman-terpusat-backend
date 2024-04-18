@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\PengumumanReplyResource;
+use App\Jobs\NotifikasiReplyBaruJob;
 use App\Models\Pengumuman;
 use App\Models\PengumumanComment;
 use Illuminate\Http\Request;
@@ -52,6 +53,10 @@ class PengumumanReplyController extends Controller
             'user_id' => $request->user_id,
             'comment' => $request->comment
         ]);
+
+        $comment = PengumumanComment::with('pengumuman')->findOrFail($comment->id);
+
+        NotifikasiReplyBaruJob::dispatch($comment)->onQueue('default');
 
         return $this->success(new PengumumanReplyResource($comment));
     }

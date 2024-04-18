@@ -15,6 +15,10 @@ class PengumumanComment extends Model
         'pengumuman_id', 'user_id', 'comment'
     ];
 
+    public function pengumuman()
+    {
+        return $this->belongsTo(Pengumuman::class);
+    }
 
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

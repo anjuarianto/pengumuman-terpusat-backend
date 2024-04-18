@@ -74,21 +74,27 @@ class PengumumanController extends Controller
                 'room_id' => $request->room_id,
             ]);
 
-            foreach ($request->recipients as $recipient) {
-                PengumumanTo::create([
-                    'pengumuman_id' => $pengumuman->id,
-                    'penerima_id' => explode('|', $recipient)[1],
-                    'is_single_user' => explode('|', $recipient)[0] === '1' ? 1 : 0,
-                ]);
+            if ($request->recipients) {
+                foreach ($request->recipients as $recipient) {
+                    PengumumanTo::create([
+                        'pengumuman_id' => $pengumuman->id,
+                        'penerima_id' => explode('|', $recipient)[1],
+                        'is_single_user' => explode('|', $recipient)[0] === '1' ? 1 : 0,
+                    ]);
+                }
             }
 
-            foreach ($request->attachment as $file) {
 
-                $pengumuman->files()->create([
-                    'file' => $file->hashName(),
-                    'original_name' => $file->getClientOriginalName()
-                ]);
+            if ($request->attachment) {
+                foreach ($request->attachment as $file) {
+
+                    $pengumuman->files()->create([
+                        'file' => $file->hashName(),
+                        'original_name' => $file->getClientOriginalName()
+                    ]);
+                }
             }
+
 
             DB::commit();
 
