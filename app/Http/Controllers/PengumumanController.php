@@ -88,6 +88,7 @@ class PengumumanController extends Controller
             if ($request->attachment) {
                 foreach ($request->attachment as $file) {
 
+                    $file->store('public/pengumuman');
                     $pengumuman->files()->create([
                         'file' => $file->hashName(),
                         'original_name' => $file->getClientOriginalName()
@@ -150,6 +151,16 @@ class PengumumanController extends Controller
                 'penerima_id' => explode('|', $user_id)[1],
                 'is_single_user' => explode('|', $user_id)[0] === '1' ? 1 : 0,
             ]);
+        }
+
+        if ($request->attachment) {
+            foreach ($request->attachment as $file) {
+                $file->store('public/pengumuman');
+                $pengumuman->files()->create([
+                    'file' => $file->hashName(),
+                    'original_name' => $file->getClientOriginalName()
+                ]);
+            }
         }
 
         return $this->success($pengumuman);
