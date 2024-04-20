@@ -149,15 +149,16 @@ class Pengumuman extends Model
 
     public static function scopeFilterPenerima($query, $penerima_id)
     {
-        if ($penerima_id) {
-            $query->whereHas('pengumumanToUsers.user', function ($query) use ($penerima_id) {
-                $query->whereIn('id', $penerima_id);
-            })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($penerima_id) {
-                $query->whereHas('users', function ($query) use ($penerima_id) {
-                    $query->whereIn('id', $penerima_id);
-                });
+        $auth_id = Auth::user()->id;
+//        if ($penerima_id) {
+        $query->whereHas('pengumumanToUsers.user', function ($query) use ($penerima_id, $auth_id) {
+            $query->whereIn('id', $penerima_id + [$auth_id]);
+        })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($penerima_id, $auth_id) {
+            $query->whereHas('users', function ($query) use ($penerima_id, $auth_id) {
+                $query->whereIn('id', $penerima_id + [$auth_id]);
             });
-        }
+        });
+//        }
 
         return $query;
     }

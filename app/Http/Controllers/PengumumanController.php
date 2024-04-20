@@ -34,8 +34,9 @@ class PengumumanController extends Controller
             ->filterSearch($request->search)
             ->filterDate($request->min_date, $request->max_date)
             ->filterPengirim($request->pengirim)
-            ->filterPenerima($request->penerima_id)
+            ->filterPenerima($request->penerima_id ?? [])
             ->filterFile($request->file_name)
+            ->orWhere('created_by', Auth::user()->id)
             ->orderBy('created_at', $request->order ?? 'desc')
             ->paginate();
 
