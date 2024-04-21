@@ -6,7 +6,6 @@ use App\Http\Requests\StorePengumumanRequest;
 use App\Http\Requests\UpdatePengumumanRequest;
 use App\Http\Resources\PaginateResource;
 use App\Http\Resources\PengumumanResource;
-use App\Http\Resources\PengungumanResource;
 use App\Jobs\KirimEmailPengumumanBaruJob;
 use App\Models\Pengumuman;
 use App\Models\PengumumanTo;
@@ -34,9 +33,9 @@ class PengumumanController extends Controller
             ->filterSearch($request->search)
             ->filterDate($request->min_date, $request->max_date)
             ->filterPengirim($request->pengirim)
-            ->filterPenerima($request->penerima_id ?? [])
+            ->filterPenerima($request->penerima_id)
             ->filterFile($request->file_name)
-            ->orWhere('created_by', Auth::user()->id)
+//            ->orWhere('room_id', Auth::user()->id)
             ->orderBy('created_at', $request->order ?? 'desc')
             ->paginate();
 

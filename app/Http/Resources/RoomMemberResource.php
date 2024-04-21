@@ -20,7 +20,7 @@ class RoomMemberResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'is_joined' => RoomHasMembers::where('room_id', $this->id)->where('user_id', Auth::user()->id)->exists(),
+            'is_joined' => RoomHasMembers::where('room_id', $this->id)->where('user_id', Auth::user()->id)->where('is_single_user', true)->exists(),
         ];
     }
 
