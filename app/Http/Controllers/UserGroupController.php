@@ -6,18 +6,20 @@ use App\Http\Requests\StoreUserGroupRequest;
 use App\Http\Requests\UpdateUserGroupRequest;
 use App\Http\Resources\UserGroupResource;
 use App\Models\UserGroup;
+use App\Models\UserGroupHasUser;
 use App\Traits\HttpResponses;
 use Illuminate\Http\Response;
 
 class UserGroupController extends Controller
 {
     use HttpResponses;
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $userGroup = UserGroup::with('users')->get();
+        $userGroup = UserGroup::all();
 
         if ($userGroup->isEmpty()) {
             return $this->error(null, 'No data found', Response::HTTP_NOT_FOUND);
@@ -36,6 +38,15 @@ class UserGroupController extends Controller
         $userGroup = UserGroup::create([
             'name' => $request->name
         ]);
+
+        if ($userGroup && $request->user) {
+            foreach ($request->user as $user) {
+                UserGroupHasUser::create([
+                    'user_group_id' => $userGroup->id,
+                    'user_id' => $user
+                ]);
+            }
+        }
 
         return $this->success(new UserGroupResource($userGroup), Response::HTTP_CREATED);
     }
@@ -57,6 +68,18 @@ class UserGroupController extends Controller
             'name' => $request->name
         ]);
 
+        UserGroupHasUser::where('user_group_id', $userGroup->id)->delete();
+
+        if ($request->user && $userGroup) {
+            foreach ($request->user as $user) {
+                UserGroupHasUser::create([
+                    'user_group_id' => $userGroup->id,
+                    'user_id' => $user
+                ]);
+            }
+        }
+
+
         return $this->success(new UserGroupResource($userGroup));
     }
 
@@ -66,6 +89,10 @@ class UserGroupController extends Controller
     public function destroy(UserGroup $userGroup)
     {
         $userGroup->delete();
+
+        if ($userGroup) {
+            UserGroupHasUser::where('user_group_id', $userGroup->id)->delete();
+        }
 
         return $this->success(null, Response::HTTP_NO_CONTENT);
     }

@@ -14,4 +14,12 @@ class UserGroupHasUser extends Model
     protected $fillable = [
         'user_group_id', 'user_id'
     ];
+
+    public function user()
+    {
+        if ($this->user_group_id == 1) {
+            return User::all();
+        }
+//        return $this->hasMany(User::class, 'id', 'user_id');
+    }
 }

@@ -6,6 +6,7 @@ use App\Traits\ExtendedHasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Models\Role;
@@ -51,6 +52,11 @@ class User extends Authenticatable
         'dosen' => '@if.itera.ac.id',
         'mahasiswa' => '@student.itera.ac.id'
     ];
+
+    public function newCollection(array $models = [])
+    {
+        return new UserCollection($models);
+    }
 
     public static function getRoleBasedOnEmailDomain($email)
     {
@@ -157,5 +163,25 @@ class User extends Authenticatable
                 return $pengumuman['waktu'] > date('Y-m-d H:i:s');
             })->values()
         ];
+    }
+}
+
+
+class UserCollection extends Collection
+{
+    /**
+     * Add roles to each user in the collection.
+     *
+     * @return $this
+     */
+    public function addRole()
+    {
+        foreach ($this->items as $user) {
+            $user->role = User::getRoleBasedOnEmailDomain($user->email);
+
+
+        }
+
+        return $this;
     }
 }

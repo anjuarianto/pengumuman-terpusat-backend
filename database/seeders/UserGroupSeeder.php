@@ -15,14 +15,17 @@ class UserGroupSeeder extends Seeder
     {
         $this->count = $count;
     }
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        foreach(range(1, $this->count) as $index) {
+        $userGroup = ['Tendik', 'Dosen', 'Mahasiswa'];
+
+        foreach ($userGroup as $group) {
             UserGroup::create([
-                'name' => 'Group ' . $index
+                'name' => $group
             ]);
         }
     }
