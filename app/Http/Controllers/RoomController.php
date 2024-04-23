@@ -70,8 +70,6 @@ class RoomController extends Controller
             return $this->error(null, 'You are not authorized to view a room', Response::HTTP_FORBIDDEN);
         }
 
-        $room->usersFromRoom = $room->getUsersFromRoomAttribute();
-
         return $this->success(new RoomResource($room), Response::HTTP_OK, 'Room found');
     }
 

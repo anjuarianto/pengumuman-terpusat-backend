@@ -23,7 +23,7 @@ class RoomMemberController extends Controller
 
     public function join(Request $request)
     {
-        if (RoomHasMembers::where('room_id', $request->room_id)->where('user_id', auth()->id())->exists()) {
+        if (RoomHasMembers::where('room_id', $request->room_id)->where('user_id', auth()->id())->where('is_single_user', 1)->exists()) {
             return $this->error(null, 'You have already joined the room', 400);
         }
 
@@ -38,11 +38,11 @@ class RoomMemberController extends Controller
 
     public function unjoin(Request $request)
     {
-        if (!RoomHasMembers::where('room_id', $request->room_id)->where('user_id', auth()->id())->exists()) {
+        if (!RoomHasMembers::where('room_id', $request->room_id)->where('user_id', auth()->id())->where('is_single_user', 1)->exists()) {
             return $this->error(null, 'No Data Found', Response::HTTP_NOT_FOUND);
         }
 
-        RoomHasMembers::where('room_id', $request->room_id)->where('user_id', auth()->id())->delete();
+        RoomHasMembers::where('room_id', $request->room_id)->where('user_id', auth()->id())->where('is_single_user', 1)->delete();
 
         return $this->success(null, Response::HTTP_NO_CONTENT);
     }

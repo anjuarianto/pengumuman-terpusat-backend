@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\ExtendedHasApiTokens;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -48,15 +49,13 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    protected static $rolesIdentify = [
-        'dosen' => '@if.itera.ac.id',
-        'mahasiswa' => '@student.itera.ac.id'
-    ];
+    const DOSEN_DOMAIN = 'if.itera.ac.id';
+    const MAHASISWA_DOMAIN = 'student.itera.ac.id';
+    const TENDIK_DOMAIN = 'staff.itera.ac.id';
 
-    public function newCollection(array $models = [])
-    {
-        return new UserCollection($models);
-    }
+    protected $appends = [
+        'role_name'
+    ];
 
     public static function getRoleBasedOnEmailDomain($email)
     {
@@ -64,10 +63,16 @@ class User extends Authenticatable
 
         $firstKeyDomain = explode('.', $domain)[0];
 
-        if ($firstKeyDomain == 'if') {
-            return 'dosen';
-        } else if ($firstKeyDomain == 'student') {
-            return 'mahasiswa';
+        switch ($firstKeyDomain) {
+            case 'student':
+                return 'mahasiswa';
+            case 'if':
+                return 'dosen';
+            case 'staff':
+                return 'tendik';
+            default:
+                return null;
+
         }
     }
 
@@ -164,24 +169,9 @@ class User extends Authenticatable
             })->values()
         ];
     }
-}
 
-
-class UserCollection extends Collection
-{
-    /**
-     * Add roles to each user in the collection.
-     *
-     * @return $this
-     */
-    public function addRole()
+    public function roleName(): Attribute
     {
-        foreach ($this->items as $user) {
-            $user->role = User::getRoleBasedOnEmailDomain($user->email);
-
-
-        }
-
-        return $this;
+        return Attribute::make(get: fn() => $this->getRoleBasedOnEmailDomain($this->email));
     }
 }

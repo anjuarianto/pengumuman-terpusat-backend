@@ -21,12 +21,19 @@ class UserGroupSeeder extends Seeder
      */
     public function run(): void
     {
-        $userGroup = ['Tendik', 'Dosen', 'Mahasiswa'];
+        UserGroup::create([
+            'id' => UserGroup::DOSEN_ID,
+            'name' => 'Dosen'
+        ]);
 
-        foreach ($userGroup as $group) {
-            UserGroup::create([
-                'name' => $group
-            ]);
-        }
+        UserGroup::create([
+            'id' => UserGroup::TENDIK_ID,
+            'name' => 'Tendik'
+        ]);
+
+        UserGroup::create([
+            'id' => UserGroup::MAHASISWA_ID,
+            'name' => 'Mahasiswa'
+        ]);
     }
 }

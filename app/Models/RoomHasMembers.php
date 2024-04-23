@@ -17,4 +17,16 @@ class RoomHasMembers extends Model
 
     public $timestamps = false;
 
+
+    public function userGroup()
+    {
+        return $this->belongsTo(UserGroup::class, 'user_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+
 }

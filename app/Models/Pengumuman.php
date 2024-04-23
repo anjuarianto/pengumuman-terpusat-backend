@@ -142,40 +142,35 @@ class Pengumuman extends Model
     public static function scopeFilterPengirim($query, $pengirim)
     {
         if (Auth::user()->can('create-pengumuman')) {
-            $query->whereHas('dibuat_oleh', function ($query) {
-                return $query->where("id", Auth::user()->id);
+            $query->orWhereHas('dibuat_oleh', function ($query) use ($pengirim) {
+                $query->where("id", Auth::user()->id);
+                if ($pengirim) {
+                    $query->orWhere("id", $pengirim);
+                }
+
+                return $query;
             });
         }
 
-
-        if ($pengirim) {
-            $query->whereHas('dibuat_oleh', function ($query) use ($pengirim) {
-                return $query->where("id", $pengirim);
-            });
-        }
 
         return $query;
     }
 
     public static function scopeFilterPenerima($query, $penerima_id)
     {
-        $query->orWhereHas('pengumumanToUsers.user', function ($query) use ($penerima_id) {
-            $query->where('id', $penerima_id);
-        })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($penerima_id) {
-            $query->whereHas('users', function ($query) use ($penerima_id) {
-                $query->where('id', $penerima_id);
+        $auth_id = Auth::user()->id;
+
+        if (!$penerima_id) {
+            $penerima_id = [];
+        }
+
+        $query->whereHas('pengumumanToUsers.user', function ($query) use ($penerima_id, $auth_id) {
+            $query->orWhere('id', $auth_id);
+        })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($penerima_id, $auth_id) {
+            $query->whereHas('users', function ($query) use ($penerima_id, $auth_id) {
+                $query->whereIn('id', $penerima_id + [$auth_id]);
             });
         });
-
-        if ($penerima_id) {
-            $query->whereHas('pengumumanToUsers.user', function ($query) use ($penerima_id) {
-                $query->whereIn('id', $penerima_id);
-            })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($penerima_id) {
-                $query->whereHas('users', function ($query) use ($penerima_id) {
-                    $query->whereIn('id', $penerima_id);
-                });
-            });
-        }
 
         return $query;
     }

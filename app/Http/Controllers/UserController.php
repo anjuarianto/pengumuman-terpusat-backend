@@ -15,8 +15,7 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $users = User::all()->addRole();
-
+        $users = User::get();
 
         $users = UserResource::collection($users);
 
