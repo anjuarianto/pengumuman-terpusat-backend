@@ -165,7 +165,7 @@ class Pengumuman extends Model
         }
 
         $query->whereHas('pengumumanToUsers.user', function ($query) use ($penerima_id, $auth_id) {
-            $query->orWhere('id', $auth_id);
+            $query->whereIn('id', $penerima_id + [$auth_id]);
         })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($penerima_id, $auth_id) {
             $query->whereHas('users', function ($query) use ($penerima_id, $auth_id) {
                 $query->whereIn('id', $penerima_id + [$auth_id]);
