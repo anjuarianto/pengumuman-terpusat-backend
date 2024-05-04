@@ -129,6 +129,51 @@ class User extends Authenticatable
         return $this->hasPermissionTo($permission, $guardName);
     }
 
+    public static function getUpcomingEvent($user_id)
+    {
+
+        $query = Pengumuman::whereHas('pengumumanToUsers', function ($query) use ($user_id) {
+            $query->where(function ($query) use ($user_id) {
+                $query->where('penerima_id', $user_id)
+                    ->where('is_single_user', true);
+            })->orWhere(function ($query) use ($user_id) {
+                $query->whereHas('userGroup', function ($query) use ($user_id) {
+                    $query->where('id', $user_id);
+                })->where('is_single_user', false);
+            });
+        })
+            ->where('waktu', '>', date('Y-m-d H:i:s'));
+
+        if (Auth::user()->hasRole('dosen')) {
+            $query->orWhere('created_by', $user_id);
+        }
+
+
+        return $query->orderBy('waktu', 'asc')
+            ->limit(7)->get();
+    }
+
+    public static function getPengumuman($user_id)
+    {
+        $query = Pengumuman::whereHas('pengumumanToUsers', function ($query) use ($user_id) {
+            $query->where(function ($query) use ($user_id) {
+                $query->where('penerima_id', $user_id)
+                    ->where('is_single_user', true);
+            })->orWhere(function ($query) use ($user_id) {
+                $query->whereHas('userGroup', function ($query) use ($user_id) {
+                    $query->where('id', $user_id);
+                })->where('is_single_user', false);
+            });
+        });
+
+        if (Auth::user()->hasRole('dosen')) {
+            $query->orWhere('created_by', $user_id);
+        }
+
+
+        return $query->get();
+    }
+
     public static function getMyDashboardData($user_id)
     {
 
@@ -155,7 +200,9 @@ class User extends Authenticatable
     public static function mySession()
     {
         $user = self::getMyDashboardData(Auth::id());
+        $auth_id = Auth::user()->id;
 
+//        return self::getPengumuman($auth_id);
         return [
             'id' => $user->id,
             'name' => $user->name,
@@ -163,10 +210,8 @@ class User extends Authenticatable
             'role' => $user->getRoleNames()->first(),
             'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
             'rooms' => $user->rooms->toArray(),
-            'pengumuman' => $user->pengumuman->toArray(),
-            'upcoming_event' => $user->pengumuman->filter(function ($pengumuman) {
-                return $pengumuman['waktu'] > date('Y-m-d H:i:s');
-            })->values()
+            'pengumuman' => self::getPengumuman($auth_id),
+            'upcoming_event' => self::getUpcomingEvent($auth_id)
         ];
     }
 

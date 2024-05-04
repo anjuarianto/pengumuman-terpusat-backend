@@ -15,7 +15,7 @@ class Pengumuman extends Model
     protected $table = 'pengumuman';
 
     protected $fillable = [
-        'judul', 'konten', 'waktu', 'created_by', 'room_id'
+        'judul', 'konten', 'waktu', 'created_by', 'room_id', 'is_private'
     ];
 
     const GENERAL_ROOM_ID = 1;
@@ -32,13 +32,16 @@ class Pengumuman extends Model
             ]);
 
 
-            foreach ($data['recipients'] as $penerima) {
-                PengumumanTo::create([
-                    'pengumuman_id' => $pengumuman->id,
-                    'is_single_user' => $penerima['is_single_user'],
-                    'penerima_id' => $penerima['penerima_id']
-                ]);
+            if (isset($data['recipients'])) {
+                foreach ($data['recipients'] as $penerima) {
+                    PengumumanTo::create([
+                        'pengumuman_id' => $pengumuman->id,
+                        'is_single_user' => $penerima['is_single_user'],
+                        'penerima_id' => $penerima['penerima_id']
+                    ]);
+                }
             }
+
 
             if (isset($data['files'])) {
                 foreach ($data['files'] as $file) {
@@ -52,7 +55,6 @@ class Pengumuman extends Model
         });
 
         return $transaction;
-
     }
 
     public function user()
@@ -98,21 +100,45 @@ class Pengumuman extends Model
         return $this->hasMany(PengumumanFile::class, 'pengumuman_id', 'id');
     }
 
+    public static function scopeFilter($query, $request)
+    {
+        if ($request->has('search')) {
+            $query->filterSearch($request->search);
+        }
+
+        if ($request->has('is_private')) {
+            $query->where('is_private', $request->is_private);
+        }
+
+        if ($request->has('room_id')) {
+            $query->filterRoom($request->room_id);
+        }
+
+        if ($request->has('min_date') || $request->has('max_date')) {
+            $query->filterDate($request->min_date, $request->max_date);
+        }
+
+        if ($request->has('pengirim')) {
+            $query->filterPengirim($request->pengirim);
+        }
+
+        if ($request->has('penerima_id')) {
+            $query->filterPenerima($request->penerima_id);
+        }
+
+        if ($request->has('file_name')) {
+            $query->filterFile($request->file_name);
+        }
+    }
+
     public static function scopeFilterSearch($query, $value)
     {
-        $query->whereHas('dibuat_oleh', function ($query) use ($value) {
-            return $query->where("name", "LIKE", "%" . $value . "%");
-        });
-        $query->orWhereHas('pengumumanToUsers.user', function ($query) use ($value) {
-            return $query->where("name", "LIKE", "%" . $value . "%");
-        })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($value) {
-            $query->whereHas('users', function ($query) use ($value) {
-                return $query->where("name", "LIKE", "%" . $value . "%");
+        if ($value) {
+            $query->where(function ($q) use ($value) {
+                $q->where('judul', 'LIKE', '%' . $value . '%')
+                    ->orWhere('konten', 'LIKE', '%' . $value . '%');
             });
-        });
-        $query->orwhere('judul', 'LIKE', '%' . $value . '%');
-        $query->orWhere('konten', 'LIKE', '%' . $value . '%');
-        $query->orWhere('waktu', 'LIKE', '%' . $value . '%');
+        }
 
         return $query;
     }
@@ -122,8 +148,6 @@ class Pengumuman extends Model
         if ($room_id) {
             return $query->where('room_id', $room_id);
         }
-
-        return $query->where('room_id', self::GENERAL_ROOM_ID);
     }
 
     public static function scopeFilterDate($query, $minDate, $maxDate)
@@ -141,15 +165,18 @@ class Pengumuman extends Model
 
     public static function scopeFilterPengirim($query, $pengirim)
     {
-        if (Auth::user()->can('create-pengumuman')) {
-            $query->orWhereHas('dibuat_oleh', function ($query) use ($pengirim) {
-                $query->where("id", Auth::user()->id);
-                if ($pengirim) {
-                    $query->orWhere("id", $pengirim);
-                }
-
-                return $query;
-            });
+//        if (Auth::user()->can('create-pengumuman')) {
+//            $query->whereHas('dibuat_oleh', function ($query) use ($pengirim) {
+//                $query->where("id", Auth::user()->id);
+//                if ($pengirim) {
+//                    $query->orWhere("id", $pengirim);
+//                }
+//
+//                return $query;
+//            });
+//        }
+        if ($pengirim) {
+            $query->where('created_by', $pengirim);
         }
 
 
@@ -158,17 +185,25 @@ class Pengumuman extends Model
 
     public static function scopeFilterPenerima($query, $penerima_id)
     {
-        $auth_id = Auth::user()->id;
+//        $auth_id = Auth::user()->id;
+//
+//        if (!$penerima_id) {
+//            $penerima_id = [];
+//        }
+//
+//        $query->whereHas('pengumumanToUsers.user', function ($query) use ($penerima_id, $auth_id) {
+//            $query->whereIn('id', $penerima_id + [$auth_id]);
+//        })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($penerima_id, $auth_id) {
+//            $query->whereHas('users', function ($query) use ($penerima_id, $auth_id) {
+//                $query->whereIn('id', $penerima_id + [$auth_id]);
+//            });
+//        });
 
-        if (!$penerima_id) {
-            $penerima_id = [];
-        }
-
-        $query->whereHas('pengumumanToUsers.user', function ($query) use ($penerima_id, $auth_id) {
-            $query->whereIn('id', $penerima_id + [$auth_id]);
-        })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($penerima_id, $auth_id) {
-            $query->whereHas('users', function ($query) use ($penerima_id, $auth_id) {
-                $query->whereIn('id', $penerima_id + [$auth_id]);
+        $query->whereHas('pengumumanToUsers.user', function ($query) use ($penerima_id) {
+            $query->whereIn('id', $penerima_id);
+        })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($penerima_id) {
+            $query->whereHas('users', function ($query) use ($penerima_id) {
+                $query->whereIn('id', $penerima_id);
             });
         });
 
@@ -202,7 +237,7 @@ class Pengumuman extends Model
 
     public static function getByUserIdAndDate($userId, $date)
     {
-        return self::whereHas('pengumumanToUsers', function ($query) use ($userId) {
+        $query = self::whereHas('pengumumanToUsers', function ($query) use ($userId) {
             $query->where(function ($query) use ($userId) {
                 $query->where('penerima_id', $userId)
                     ->where('is_single_user', true);
@@ -211,7 +246,13 @@ class Pengumuman extends Model
                     $query->where('id', $userId);
                 })->where('is_single_user', false);
             });
-        })->whereDate('waktu', $date)->get();
+        });
+
+        if (Auth::user()->hasRole('dosen')) {
+            $query->orWhere('created_by', $userId);
+        }
+
+        return $query->whereDate('waktu', $date)->get();
     }
 
     public static function notificationDaily()

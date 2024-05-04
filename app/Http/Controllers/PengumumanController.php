@@ -29,14 +29,8 @@ class PengumumanController extends Controller
             return $this->error(null, 'Tidak memiliki akses untuk melihat pengumuman', Response::HTTP_FORBIDDEN);
         }
 
-        $pengumumans = Pengumuman::filterRoom($request->room_id)
-            ->filterSearch($request->search)
-            ->filterDate($request->min_date, $request->max_date)
-            ->filterPenerima($request->penerima_id)
-            ->filterPengirim($request->pengirim)
-            ->filterFile($request->file_name)
-//            ->orWhere('room_id', Auth::user()->id)
-            ->orderBy('created_at', $request->order ?? 'desc')
+        $pengumumans = Pengumuman::filter($request)
+            ->orderBy('waktu', $request->order ?? 'desc')
             ->paginate();
 
         $pengumumans->each(function ($pengumuman) {
@@ -70,6 +64,7 @@ class PengumumanController extends Controller
                 'judul' => $request->judul,
                 'konten' => $request->konten,
                 'waktu' => $request->waktu,
+                'is_private' => $request->is_private,
                 'created_by' => Auth::user()->id,
                 'room_id' => $request->room_id,
             ]);
@@ -139,18 +134,21 @@ class PengumumanController extends Controller
             'judul' => $request->judul,
             'konten' => $request->konten,
             'waktu' => $request->waktu,
+            'is_private' => $request->is_private,
             'created_by' => Auth::user()->id,
             'room_id' => $request->room_id,
         ]);
 
         $pengumuman->pengumumanToUsers()->delete();
 
-        foreach ($request->recipients as $user_id) {
-            PengumumanTo::create([
-                'pengumuman_id' => $pengumuman->id,
-                'penerima_id' => explode('|', $user_id)[1],
-                'is_single_user' => explode('|', $user_id)[0] === '1' ? 1 : 0,
-            ]);
+        if ($request->recipients) {
+            foreach ($request->recipients as $user_id) {
+                PengumumanTo::create([
+                    'pengumuman_id' => $pengumuman->id,
+                    'penerima_id' => explode('|', $user_id)[1],
+                    'is_single_user' => explode('|', $user_id)[0] === '1' ? 1 : 0,
+                ]);
+            }
         }
 
         if ($request->attachment) {

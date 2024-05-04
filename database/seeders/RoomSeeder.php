@@ -18,21 +18,11 @@ class RoomSeeder extends Seeder
         Room::create([
             'id' => 1,
             'name' => 'General',
-            'description' => 'Ini adalah room general'
+            'description' => 'Ini adalah category general'
         ]);
 
         Room::factory(10)->create();
 
         $rooms = Room::all();
-
-        $rooms->each(function ($room) {
-            foreach (range(1, 10) as $index) {
-                $is_single_user = rand(0, 1);
-                $room->members()->create([
-                    'user_id' => $is_single_user ? User::all()->random()->id : UserGroup::all()->random()->id,
-                    'is_single_user' => $is_single_user
-                ]);
-            }
-        });
     }
 }

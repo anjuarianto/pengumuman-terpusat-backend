@@ -18,7 +18,7 @@ class RoomFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->numerify('Room ###'),
+            'name' => fake()->numerify('category ###'),
             'description' => fake()->text($maxNbChars = 255)
         ];
     }

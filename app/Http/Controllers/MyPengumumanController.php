@@ -17,11 +17,7 @@ class MyPengumumanController extends Controller
      */
     public function __invoke(Request $request, $date)
     {
-        $data = Pengumuman::getByUserIdAndDate(Auth::id(), $date);
-
-        if ($data->isEmpty()) {
-            return $this->success(null, 200, 'Data tidak ditemukan');
-        }
+        $data = Pengumuman::getByUserIdAndDate(Auth::user()->id, $date);
 
         return $this->success($data);
     }

@@ -17,14 +17,14 @@ class RolePermissionSeeder extends Seeder
         $permissions = Permission::all();
 
         $permission_mahasiswa = [
-            'view-pengumuman', 'view-pengumuman-reply', 'create-pengumuman-reply', 'edit-pengumuman-reply', 'delete-pengumuman-reply'
+            'view-pengumuman', 'view-pengumuman-reply', 'create-pengumuman-reply', 'edit-pengumuman-reply', 'delete-pengumuman-reply', 'view-room'
         ];
 
-        foreach($permissions as $permission) {
+        foreach ($permissions as $permission) {
             Role::where('name', 'dosen')->first()->givePermissionTo($permission);
         }
 
-        foreach($permission_mahasiswa as $permission) {
+        foreach ($permission_mahasiswa as $permission) {
             Role::where('name', 'mahasiswa')->first()->givePermissionTo($permission);
         }
     }
