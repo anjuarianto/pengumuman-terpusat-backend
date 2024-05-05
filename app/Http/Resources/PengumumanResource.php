@@ -32,12 +32,61 @@ class PengumumanResource extends JsonResource
             'files' => $this->files->map(function ($file) {
                 return ['file' => $file->file, 'original_name' => $file->original_name];
             }),
-            'can_reply' => Auth::user() && Auth::user()->can('create-pengumuman-reply') &&
-                ($this->usersFromPengumumanTo->contains('id', Auth::user()->id) || $this->created_by == Auth::user()->id),
-            'can_edit' => Auth::user() && Auth::user()->can('edit-pengumuman') && $this->created_by == Auth::user()->id,
-            'can_delete' => Auth::user() && Auth::user()->can('delete-pengumuman') && $this->created_by == Auth::user()->id,
-            'created_at' => Auth::user() && date('Y-m-d H:i:s', strtotime($this->created_at)),
+            'can_reply' => $this->canReply(),
+            'can_edit' => $this->canEdit(),
+            'can_delete' => $this->canDelete(),
+            'created_at' => date('Y-m-d H:i:s', strtotime($this->created_at)),
         ];
     }
 
+    public function canEdit()
+    {
+        if (!auth()->user()) {
+            return false;
+        }
+
+        if (!auth()->user()->can('edit-pengumuman')) {
+            return false;
+        }
+
+        if (!auth()->user()->id != $this->created_by) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function canReply()
+    {
+        if (!auth()->user()) {
+            return false;
+        }
+
+        if (!auth()->user()->can('create-pengumuman-reply')) {
+            return false;
+        }
+
+        if (!$this->usersFromPengumumanTo->contains('id', Auth::user()->id) || $this->created_by != Auth::user()->id) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function canDelete()
+    {
+        if (!auth()->user()) {
+            return false;
+        }
+
+        if (!auth()->user()->can('delete-pengumuman')) {
+            return false;
+        }
+
+        if (!auth()->user()->id != $this->created_by) {
+            return false;
+        }
+
+        return true;
+    }
 }

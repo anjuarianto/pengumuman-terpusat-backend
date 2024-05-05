@@ -25,11 +25,6 @@ class PengumumanController extends Controller
      */
     public function index(Request $request)
     {
-        if (!Auth::user()) {
-            $no_auth = new PengumumanNoAuthController();
-
-            return $no_auth->__invoke($request);
-        }
         if (!Auth::user()->checkPermissionTo('view-pengumuman')) {
             return $this->error(null, 'Tidak memiliki akses untuk melihat pengumuman', Response::HTTP_FORBIDDEN);
         }

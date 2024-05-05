@@ -42,11 +42,11 @@ Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
     return User::mySession();
 });
 
-Route::resource('pengumuman', PengumumanController::class);
-
+Route::get('/pengumuman-publik', \App\Http\Controllers\PengumumanNoAuthController::class);
 Route::middleware('auth:sanctum')->group(function () {
 
 
+    Route::resource('pengumuman', PengumumanController::class);
     Route::resource('user-group', UserGroupController::class);
     Route::resource('room', RoomController::class);
     Route::resource('pengumuman/{pengumuman}/reply', \App\Http\Controllers\PengumumanReplyController::class);
