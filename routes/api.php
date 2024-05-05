@@ -5,8 +5,8 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\UserGroupController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Room;
 use App\Http\Controllers\MyPengumumanController;
 use App\Http\Controllers\UserController;
 
@@ -31,6 +31,10 @@ Route::post('/upload', function () {
     ];
 });
 
+Route::get('/user-list', \App\Http\Controllers\UserListController::class);
+
+Route::get('/room-list', \App\Http\Controllers\RoomListController::class);
+
 Route::post('/register', [\App\Http\Controllers\Api\AuthController::class, 'register']);
 Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
 
@@ -38,8 +42,11 @@ Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
     return User::mySession();
 });
 
+Route::resource('pengumuman', PengumumanController::class);
+
 Route::middleware('auth:sanctum')->group(function () {
-    Route::resource('pengumuman', PengumumanController::class);
+
+
     Route::resource('user-group', UserGroupController::class);
     Route::resource('room', RoomController::class);
     Route::resource('pengumuman/{pengumuman}/reply', \App\Http\Controllers\PengumumanReplyController::class);

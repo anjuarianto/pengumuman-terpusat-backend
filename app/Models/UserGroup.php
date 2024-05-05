@@ -24,6 +24,12 @@ class UserGroup extends Model
     const TENDIK_ID = 2;
     const MAHASISWA_ID = 3;
 
+    const USER_GROUP = [
+        'dosen' => self::DOSEN_ID,
+        'tendik' => self::TENDIK_ID,
+        'mahasiswa' => self::MAHASISWA_ID
+    ];
+
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_group_has_user', 'user_group_id', 'user_id');

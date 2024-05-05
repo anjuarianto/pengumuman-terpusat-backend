@@ -32,11 +32,11 @@ class PengumumanResource extends JsonResource
             'files' => $this->files->map(function ($file) {
                 return ['file' => $file->file, 'original_name' => $file->original_name];
             }),
-            'can_reply' => Auth::user()->can('create-pengumuman-reply') &&
+            'can_reply' => Auth::user() && Auth::user()->can('create-pengumuman-reply') &&
                 ($this->usersFromPengumumanTo->contains('id', Auth::user()->id) || $this->created_by == Auth::user()->id),
-            'can_edit' => Auth::user()->can('edit-pengumuman') && $this->created_by == Auth::user()->id,
-            'can_delete' => Auth::user()->can('delete-pengumuman') && $this->created_by == Auth::user()->id,
-            'created_at' => date('Y-m-d H:i:s', strtotime($this->created_at)),
+            'can_edit' => Auth::user() && Auth::user()->can('edit-pengumuman') && $this->created_by == Auth::user()->id,
+            'can_delete' => Auth::user() && Auth::user()->can('delete-pengumuman') && $this->created_by == Auth::user()->id,
+            'created_at' => Auth::user() && date('Y-m-d H:i:s', strtotime($this->created_at)),
         ];
     }
 

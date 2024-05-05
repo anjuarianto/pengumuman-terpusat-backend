@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             new UserGroupSeeder(),
             new UserSeeder(30),
             new RoomSeeder(),
+            new UserGroupHasUserSeeder(),
             new PengumumanSeeder(),
         ];
 

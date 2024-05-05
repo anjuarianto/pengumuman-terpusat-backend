@@ -102,6 +102,23 @@ class Pengumuman extends Model
 
     public static function scopeFilter($query, $request)
     {
+        if (Auth::user()) {
+            $user_id = Auth::user()->id;
+
+            $query->whereHas('pengumumanToUsers.user', function ($query) use ($user_id) {
+                $query->whereIn('id', [$user_id]);
+            })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($user_id) {
+                $query->whereHas('users', function ($query) use ($user_id) {
+                    $query->whereIn('id', [$user_id]);
+                });
+            });
+
+
+            if (Auth::user()->hasRole('dosen')) {
+                $query->orWhere('created_by', $user_id);
+            }
+        }
+
         if ($request->has('search')) {
             $query->filterSearch($request->search);
         }

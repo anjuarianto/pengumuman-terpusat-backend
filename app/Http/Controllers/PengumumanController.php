@@ -25,6 +25,11 @@ class PengumumanController extends Controller
      */
     public function index(Request $request)
     {
+        if (!Auth::user()) {
+            $no_auth = new PengumumanNoAuthController();
+
+            return $no_auth->__invoke($request);
+        }
         if (!Auth::user()->checkPermissionTo('view-pengumuman')) {
             return $this->error(null, 'Tidak memiliki akses untuk melihat pengumuman', Response::HTTP_FORBIDDEN);
         }
@@ -32,12 +37,6 @@ class PengumumanController extends Controller
         $pengumumans = Pengumuman::filter($request)
             ->orderBy('waktu', $request->order ?? 'desc')
             ->paginate();
-
-        $pengumumans->each(function ($pengumuman) {
-            $pengumuman->load('pengumumanToUsers');
-
-            $pengumuman->usersFromPengumumanTo = $pengumuman->getUsersFromPengumumanToAttribute();
-        });
 
         $pengumuman = PengumumanResource::collection($pengumumans)->response()->getData(true);
 

@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Models\UserGroup;
+use App\Models\UserGroupHasUser;
 use App\Traits\HttpResponses;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
+
 
 class UserController extends Controller
 {
@@ -25,11 +28,30 @@ class UserController extends Controller
     public function store(Request $request)
     {
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password)
-        ]);
+        if (User::getRoleBasedOnEmailDomain($request->email) == null) {
+            return $this->error(null, 'Email tidak valid', 400);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make('password')
+            ]);
+
+            UserGroupHasUser::create([
+                'user_id' => $user->id,
+                'user_group_id' => UserGroup::USER_GROUP[User::getRoleBasedOnEmailDomain($request->email)]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->error(null, $e->getMessage(), 500);
+        }
+
+        DB::commit();
 
         return $this->success(new UserResource($user));
     }

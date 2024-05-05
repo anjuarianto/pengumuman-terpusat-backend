@@ -132,14 +132,11 @@ class User extends Authenticatable
     public static function getUpcomingEvent($user_id)
     {
 
-        $query = Pengumuman::whereHas('pengumumanToUsers', function ($query) use ($user_id) {
-            $query->where(function ($query) use ($user_id) {
-                $query->where('penerima_id', $user_id)
-                    ->where('is_single_user', true);
-            })->orWhere(function ($query) use ($user_id) {
-                $query->whereHas('userGroup', function ($query) use ($user_id) {
-                    $query->where('id', $user_id);
-                })->where('is_single_user', false);
+        $query = Pengumuman::whereHas('pengumumanToUsers.user', function ($query) use ($user_id) {
+            $query->whereIn('id', [$user_id]);
+        })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($user_id) {
+            $query->whereHas('users', function ($query) use ($user_id) {
+                $query->whereIn('id', [$user_id]);
             });
         })
             ->where('waktu', '>', date('Y-m-d H:i:s'));
@@ -155,14 +152,11 @@ class User extends Authenticatable
 
     public static function getPengumuman($user_id)
     {
-        $query = Pengumuman::whereHas('pengumumanToUsers', function ($query) use ($user_id) {
-            $query->where(function ($query) use ($user_id) {
-                $query->where('penerima_id', $user_id)
-                    ->where('is_single_user', true);
-            })->orWhere(function ($query) use ($user_id) {
-                $query->whereHas('userGroup', function ($query) use ($user_id) {
-                    $query->where('id', $user_id);
-                })->where('is_single_user', false);
+        $query = Pengumuman::whereHas('pengumumanToUsers.user', function ($query) use ($user_id) {
+            $query->whereIn('id', [$user_id]);
+        })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($user_id) {
+            $query->whereHas('users', function ($query) use ($user_id) {
+                $query->whereIn('id', [$user_id]);
             });
         });
 
