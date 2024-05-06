@@ -89,6 +89,12 @@ class User extends Authenticatable
             if ($role) {
                 $this->roles()->syncWithoutDetaching($role->id);
             }
+        } else if ($firstKeyDomain == 'staff') {
+            $role = Role::where('name', 'tendik')->first();
+
+            if ($role) {
+                $this->roles()->syncWithoutDetaching($role->id);
+            }
         } else if ($firstKeyDomain == 'student') {
             $role = Role::where('name', 'mahasiswa')->first();
             if ($role) {
