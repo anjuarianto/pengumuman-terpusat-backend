@@ -22,6 +22,7 @@ class RolePermissionSeeder extends Seeder
 
         foreach ($permissions as $permission) {
             Role::where('name', 'dosen')->first()->givePermissionTo($permission);
+            Role::where('name', 'tendik')->first()->givePermissionTo($permission);
         }
 
         foreach ($permission_mahasiswa as $permission) {

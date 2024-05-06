@@ -32,58 +32,58 @@ class PengumumanResource extends JsonResource
             'files' => $this->files->map(function ($file) {
                 return ['file' => $file->file, 'original_name' => $file->original_name];
             }),
-            'can_reply' => $this->canReply(),
-            'can_edit' => $this->canEdit(),
-            'can_delete' => $this->canDelete(),
+            'can_reply' => $this->canReply($request),
+            'can_edit' => $this->canEdit($request),
+            'can_delete' => $this->canDelete($request),
             'created_at' => date('Y-m-d H:i:s', strtotime($this->created_at)),
         ];
     }
 
-    public function canEdit()
+    public function canEdit($request)
     {
-        if (!auth()->user()) {
+        if (!Auth::user()) {
             return false;
         }
 
-        if (!auth()->user()->can('edit-pengumuman')) {
+        if (!Auth::user()->can('edit-pengumuman')) {
             return false;
         }
 
-        if (!auth()->user()->id != $this->created_by) {
+        if ($request->user()->id != $this->created_by) {
             return false;
         }
 
         return true;
     }
 
-    public function canReply()
+    public function canReply($request)
     {
-        if (!auth()->user()) {
+        if (!Auth::user()) {
             return false;
         }
 
-        if (!auth()->user()->can('create-pengumuman-reply')) {
+        if (!Auth::user()->can('create-pengumuman-reply')) {
             return false;
         }
 
-        if (!$this->usersFromPengumumanTo->contains('id', Auth::user()->id) || $this->created_by != Auth::user()->id) {
+        if (!$this->usersFromPengumumanTo->contains('id', Auth::user()->id) && $this->created_by != Auth::user()->id) {
             return false;
         }
 
         return true;
     }
 
-    public function canDelete()
+    public function canDelete($request)
     {
-        if (!auth()->user()) {
+        if (!Auth::user()) {
             return false;
         }
 
-        if (!auth()->user()->can('delete-pengumuman')) {
+        if (!Auth::user()->can('delete-pengumuman')) {
             return false;
         }
 
-        if (!auth()->user()->id != $this->created_by) {
+        if (Auth::user()->id != $this->created_by) {
             return false;
         }
 
