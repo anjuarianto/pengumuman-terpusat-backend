@@ -50,8 +50,6 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        $user = User::getMyDashboardData(Auth::user()->id);
-
 
         return response()->json([
             'message' => 'Login success',
