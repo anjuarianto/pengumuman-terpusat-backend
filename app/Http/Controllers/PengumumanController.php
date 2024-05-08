@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePengumumanRequest;
 use App\Http\Requests\UpdatePengumumanRequest;
-use App\Http\Resources\PaginateResource;
 use App\Http\Resources\PengumumanResource;
 use App\Jobs\KirimEmailPengumumanBaruJob;
 use App\Models\Pengumuman;
@@ -14,7 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 
 class PengumumanController extends Controller
 {

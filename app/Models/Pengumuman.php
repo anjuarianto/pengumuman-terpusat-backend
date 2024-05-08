@@ -67,9 +67,6 @@ class Pengumuman extends Model
         return $this->hasMany(PengumumanTo::class, 'pengumuman_id');
     }
 
-    /**
-     * Define a custom attribute to get users from pengumuman_to relation.
-     */
     public function getUsersFromPengumumanToAttribute()
     {
         $usersCollection = collect([]);
@@ -100,18 +97,39 @@ class Pengumuman extends Model
         return $this->hasMany(PengumumanFile::class, 'pengumuman_id', 'id');
     }
 
+    public static function scopefilterByUser($query, $user_id)
+    {
+        $query->whereHas('pengumumanToUsers', function ($query) use ($user_id) {
+            $query->where(function ($query) use ($user_id) {
+                $query->where('is_single_user', 1)->whereHas('user', function ($query) use ($user_id) {
+                    $query->whereIn('id', [$user_id]);
+                });
+
+                $query->where('is_single_user', 0)->orWhereHas('userGroup', function ($query) use ($user_id) {
+                    $query->whereHas('users', function ($query) use ($user_id) {
+                        $query->whereIn('id', [$user_id]);
+                    });
+                });
+            });
+        });
+
+        return $query;
+    }
+
     public static function scopeFilter($query, $request)
     {
         if (Auth::user()) {
             $user_id = Auth::user()->id;
 
-            $query->whereHas('pengumumanToUsers.user', function ($query) use ($user_id) {
-                $query->whereIn('id', [$user_id]);
-            })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($user_id) {
-                $query->whereHas('users', function ($query) use ($user_id) {
-                    $query->whereIn('id', [$user_id]);
-                });
-            });
+            if (!$request->has('is_private')) {
+                $query->where('is_private', 1);
+            }
+
+            $query->filterByUser($user_id);
+
+            if (!$request->has('is_private')) {
+                $query->orWhere('is_private', 0);
+            }
 
 
             if (Auth::user()->hasRole('dosen') || Auth::user()->hasRole('tendik')) {
@@ -182,16 +200,6 @@ class Pengumuman extends Model
 
     public static function scopeFilterPengirim($query, $pengirim)
     {
-//        if (Auth::user()->can('create-pengumuman')) {
-//            $query->whereHas('dibuat_oleh', function ($query) use ($pengirim) {
-//                $query->where("id", Auth::user()->id);
-//                if ($pengirim) {
-//                    $query->orWhere("id", $pengirim);
-//                }
-//
-//                return $query;
-//            });
-//        }
         if ($pengirim) {
             $query->where('created_by', $pengirim);
         }
@@ -202,20 +210,6 @@ class Pengumuman extends Model
 
     public static function scopeFilterPenerima($query, $penerima_id)
     {
-//        $auth_id = Auth::user()->id;
-//
-//        if (!$penerima_id) {
-//            $penerima_id = [];
-//        }
-//
-//        $query->whereHas('pengumumanToUsers.user', function ($query) use ($penerima_id, $auth_id) {
-//            $query->whereIn('id', $penerima_id + [$auth_id]);
-//        })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($penerima_id, $auth_id) {
-//            $query->whereHas('users', function ($query) use ($penerima_id, $auth_id) {
-//                $query->whereIn('id', $penerima_id + [$auth_id]);
-//            });
-//        });
-
         $query->whereHas('pengumumanToUsers.user', function ($query) use ($penerima_id) {
             $query->whereIn('id', $penerima_id);
         })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($penerima_id) {
@@ -238,32 +232,9 @@ class Pengumuman extends Model
         return $query;
     }
 
-    public static function getByUserId($userId)
-    {
-        return self::whereHas('pengumumanToUsers', function ($query) use ($userId) {
-            $query->where(function ($query) use ($userId) {
-                $query->where('penerima_id', $userId)
-                    ->where('is_single_user', true);
-            })->orWhere(function ($query) use ($userId) {
-                $query->whereHas('userGroup', function ($query) use ($userId) {
-                    $query->where('id', $userId);
-                })->where('is_single_user', false);
-            });
-        })->get();
-    }
-
     public static function getByUserIdAndDate($userId, $date)
     {
-        $query = self::whereHas('pengumumanToUsers', function ($query) use ($userId) {
-            $query->where(function ($query) use ($userId) {
-                $query->where('penerima_id', $userId)
-                    ->where('is_single_user', true);
-            })->orWhere(function ($query) use ($userId) {
-                $query->whereHas('userGroup', function ($query) use ($userId) {
-                    $query->where('id', $userId);
-                })->where('is_single_user', false);
-            });
-        });
+        $query = self::filterByUser($userId);
 
         if (Auth::user()->hasRole('dosen')) {
             $query->orWhere('created_by', $userId);

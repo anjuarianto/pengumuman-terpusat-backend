@@ -138,19 +138,11 @@ class User extends Authenticatable
     public static function getUpcomingEvent($user_id)
     {
 
-        $query = Pengumuman::whereHas('pengumumanToUsers.user', function ($query) use ($user_id) {
-            $query->whereIn('id', [$user_id]);
-        })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($user_id) {
-            $query->whereHas('users', function ($query) use ($user_id) {
-                $query->whereIn('id', [$user_id]);
-            });
-        })
-            ->where('waktu', '>', date('Y-m-d H:i:s'));
+        $query = Pengumuman::filterByUser($user_id)->where('waktu', '>', date('Y-m-d H:i:s'));
 
-        if (Auth::user()->hasRole('dosen')) {
+        if (Auth::user()->hasRole('dosen') || Auth::user()->hasRole('tendik')) {
             $query->orWhere('created_by', $user_id);
         }
-
 
         return $query->orderBy('waktu', 'asc')
             ->limit(7)->get();
@@ -158,13 +150,7 @@ class User extends Authenticatable
 
     public static function getPengumuman($user_id)
     {
-        $query = Pengumuman::whereHas('pengumumanToUsers.user', function ($query) use ($user_id) {
-            $query->whereIn('id', [$user_id]);
-        })->orWhereHas('pengumumanToUsers.userGroup', function ($query) use ($user_id) {
-            $query->whereHas('users', function ($query) use ($user_id) {
-                $query->whereIn('id', [$user_id]);
-            });
-        });
+        $query = Pengumuman::filterByUser($user_id);
 
         if (Auth::user()->hasRole('dosen')) {
             $query->orWhere('created_by', $user_id);
@@ -174,44 +160,17 @@ class User extends Authenticatable
         return $query->get();
     }
 
-    public static function getMyDashboardData($user_id)
-    {
-
-        $user = User::with(['rooms' => function ($query) {
-            $query->select('id', 'name');
-        }])->find($user_id);
-
-        if (Auth::user()->hasRole('dosen')) {
-            $user->pengumuman = Pengumuman::select('id', 'judul', 'waktu')->where('created_by', $user_id)->get();
-            return $user;
-        }
-
-        $pengumumans = Pengumuman::getByUserId($user_id)->map(function ($pengumuman) {
-
-            return $pengumuman->only(['id', 'judul', 'waktu']);
-        });
-
-        $user->pengumuman = $pengumumans;
-
-        return $user;
-
-    }
 
     public static function mySession()
     {
-        $user = self::getMyDashboardData(Auth::id());
-        $auth_id = Auth::user()->id;
-
-//        return self::getPengumuman($auth_id);
         return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->getRoleNames()->first(),
-            'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
-            'rooms' => $user->rooms->toArray(),
-            'pengumuman' => self::getPengumuman($auth_id),
-            'upcoming_event' => self::getUpcomingEvent($auth_id)
+            'id' => Auth::user()->id,
+            'name' => Auth::user()->name,
+            'email' => Auth::user()->email,
+            'role' => Auth::user()->getRoleNames()->first(),
+            'permissions' => Auth()->user()->getAllPermissions()->pluck('name')->toArray(),
+            'pengumuman' => self::getPengumuman(Auth::user()->id),
+            'upcoming_event' => self::getUpcomingEvent(Auth::user()->id)
         ];
     }
 
