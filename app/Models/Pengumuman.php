@@ -113,6 +113,9 @@ class Pengumuman extends Model
             });
         });
 
+        if (Auth::user()->hasRole('dosen') || Auth::user()->hasRole('tendik')) {
+            $query->orWhere('created_by', $user_id);
+        }
         return $query;
     }
 
@@ -235,10 +238,6 @@ class Pengumuman extends Model
     public static function getByUserIdAndDate($userId, $date)
     {
         $query = self::filterByUser($userId);
-
-        if (Auth::user()->hasRole('dosen')) {
-            $query->orWhere('created_by', $userId);
-        }
 
         return $query->whereDate('waktu', $date)->get();
     }

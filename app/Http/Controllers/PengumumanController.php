@@ -74,7 +74,9 @@ class PengumumanController extends Controller
 
             if ($request->attachment) {
                 foreach ($request->attachment as $file) {
-
+                    if ($file->getSize() > 2000000) {
+                        return $this->error(null, 'Ukuran file attachment tidak boleh lebih dari 2MB', Response::HTTP_BAD_REQUEST);
+                    }
                     $file->store('public/pengumuman');
                     $pengumuman->files()->create([
                         'file' => $file->hashName(),
@@ -145,6 +147,9 @@ class PengumumanController extends Controller
 
         if ($request->attachment) {
             foreach ($request->attachment as $file) {
+                if ($file->getSize() > 2000000) {
+                    return $this->error(null, 'Ukuran file attachment tidak boleh lebih dari 2MB', Response::HTTP_BAD_REQUEST);
+                }
                 $file->store('public/pengumuman');
                 $pengumuman->files()->create([
                     'file' => $file->hashName(),
