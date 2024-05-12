@@ -28,7 +28,7 @@ class PengumumanController extends Controller
         }
 
         $pengumumans = Pengumuman::filter($request)
-            ->orderBy('waktu', $request->order ?? 'desc')
+            ->orderBy('created_at', $request->order ?? 'desc')
             ->paginate();
 
         $pengumuman = PengumumanResource::collection($pengumumans)->response()->getData(true);
@@ -74,8 +74,8 @@ class PengumumanController extends Controller
 
             if ($request->attachment) {
                 foreach ($request->attachment as $file) {
-                    if ($file->getSize() > 2000000) {
-                        return $this->error(null, 'Ukuran file attachment tidak boleh lebih dari 2MB', Response::HTTP_BAD_REQUEST);
+                    if ($file->getSize() > 25000000) {
+                        return $this->error(null, 'Ukuran file attachment tidak boleh lebih dari 25MB', Response::HTTP_BAD_REQUEST);
                     }
                     $file->store('public/pengumuman');
                     $pengumuman->files()->create([

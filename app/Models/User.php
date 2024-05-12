@@ -137,12 +137,7 @@ class User extends Authenticatable
 
     public static function getUpcomingEvent($user_id)
     {
-
         $query = Pengumuman::filterByUser($user_id)->where('waktu', '>', date('Y-m-d H:i:s'));
-
-        if (Auth::user()->hasRole('dosen') || Auth::user()->hasRole('tendik')) {
-            $query->orWhere('created_by', $user_id);
-        }
 
         return $query->orderBy('waktu', 'asc')
             ->limit(7)->get();

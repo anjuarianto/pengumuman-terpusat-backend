@@ -99,23 +99,23 @@ class Pengumuman extends Model
 
     public static function scopefilterByUser($query, $user_id)
     {
-        $query->whereHas('pengumumanToUsers', function ($query) use ($user_id) {
+        $query->where('is_private', 1)->whereHas('pengumumanToUsers', function ($query) use ($user_id) {
             $query->where(function ($query) use ($user_id) {
                 $query->where('is_single_user', 1)->whereHas('user', function ($query) use ($user_id) {
                     $query->whereIn('id', [$user_id]);
                 });
-
-                $query->where('is_single_user', 0)->orWhereHas('userGroup', function ($query) use ($user_id) {
+                $query->orWhere('is_single_user', 0)->whereHas('userGroup', function ($query) use ($user_id) {
                     $query->whereHas('users', function ($query) use ($user_id) {
                         $query->whereIn('id', [$user_id]);
                     });
                 });
             });
-        });
+        })->orWhere('is_private', 0);
 
         if (Auth::user()->hasRole('dosen') || Auth::user()->hasRole('tendik')) {
             $query->orWhere('created_by', $user_id);
         }
+
         return $query;
     }
 
@@ -124,20 +124,8 @@ class Pengumuman extends Model
         if (Auth::user()) {
             $user_id = Auth::user()->id;
 
-            if (!$request->has('is_private')) {
-                $query->where('is_private', 1);
-            }
-
             $query->filterByUser($user_id);
 
-            if (!$request->has('is_private')) {
-                $query->orWhere('is_private', 0);
-            }
-
-
-            if (Auth::user()->hasRole('dosen') || Auth::user()->hasRole('tendik')) {
-                $query->orWhere('created_by', $user_id);
-            }
         }
 
         if ($request->has('search')) {
