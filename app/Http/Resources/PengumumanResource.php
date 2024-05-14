@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Pengumuman;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\PaginatedResourceResponse;
@@ -66,7 +67,7 @@ class PengumumanResource extends JsonResource
             return false;
         }
 
-        if (!$this->usersFromPengumumanTo->contains('id', Auth::user()->id) && $this->created_by != Auth::user()->id) {
+        if (!(Pengumuman::filterByUser(Auth::user()->id)->exists() || $this->created_by == Auth::user()->id)) {
             return false;
         }
 

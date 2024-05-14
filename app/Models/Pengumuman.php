@@ -112,7 +112,7 @@ class Pengumuman extends Model
             });
         })->orWhere('is_private', 0);
 
-        if (Auth::user()->hasRole('dosen') || Auth::user()->hasRole('tendik')) {
+        if (User::find($user_id)->hasRole('dosen') || User::find($user_id)->hasRole('tendik')) {
             $query->orWhere('created_by', $user_id);
         }
 

@@ -21,15 +21,6 @@ use App\Http\Controllers\UserController;
 |
 */
 
-Route::post('/upload', function () {
-    $path = request()->file('upload')->store('public');
-
-    $url = str_replace('public', 'storage', $path);
-    return [
-        'path' => $path,
-        'url' => URL::to($url)
-    ];
-});
 
 Route::get('/user-list', \App\Http\Controllers\UserListController::class);
 
@@ -45,6 +36,20 @@ Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
 Route::get('/pengumuman-publik', \App\Http\Controllers\PengumumanNoAuthController::class);
 Route::middleware('auth:sanctum')->group(function () {
 
+
+    Route::post('/upload', function () {
+//        restrict to not accept script file type
+        request()->validate([
+            'upload' => 'required|file|mimes:jpeg,png,jpg,pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar|max:2048'
+        ]);
+        $path = request()->file('upload')->store('public');
+
+        $url = str_replace('public', 'storage', $path);
+        return [
+            'path' => $path,
+            'url' => URL::to($url)
+        ];
+    });
 
     Route::resource('pengumuman', PengumumanController::class);
     Route::resource('user-group', UserGroupController::class);
