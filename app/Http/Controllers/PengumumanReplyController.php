@@ -44,9 +44,12 @@ class PengumumanReplyController extends Controller
             return $this->error(null, 'Pengumuman tidak ditemukan', Response::HTTP_NOT_FOUND);
         }
 
-        if (!$pengumuman->pengumumanToUsers->contains('penerima_id', Auth::user()->id || $pengumuman->created_by != Auth::user()->id)) {
-            return $this->error(null, 'Tidak memiliki akses untuk membuat balasan pengumuman', Response::HTTP_FORBIDDEN);
+        if ($pengumuman->is_private) {
+            if (!$pengumuman->pengumumanToUsers->contains('penerima_id', Auth::user()->id || $pengumuman->created_by != Auth::user()->id)) {
+                return $this->error(null, 'Tidak memiliki akses untuk membuat balasan pengumuman', Response::HTTP_FORBIDDEN);
+            }
         }
+
 
         $comment = PengumumanComment::create([
             'pengumuman_id' => $pengumuman->id,

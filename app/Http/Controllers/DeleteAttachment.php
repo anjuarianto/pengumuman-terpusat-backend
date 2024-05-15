@@ -14,9 +14,9 @@ class DeleteAttachment extends Controller
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Request $request, $filename)
+    public function __invoke(Request $request, $id)
     {
-        $attachment = PengumumanFile::where('file', 'like', '%' . $filename . '%')->first();
+        $attachment = PengumumanFile::findOrFail($id);
 
         DB::beginTransaction();
         try {

@@ -139,15 +139,18 @@ class PengumumanController extends Controller
 
         $pengumuman->pengumumanToUsers()->delete();
 
-        if ($request->recipients) {
-            foreach ($request->recipients as $user_id) {
-                PengumumanTo::create([
-                    'pengumuman_id' => $pengumuman->id,
-                    'penerima_id' => explode('|', $user_id)[1],
-                    'is_single_user' => explode('|', $user_id)[0] === '1' ? 1 : 0,
-                ]);
+        if ($request->is_private) {
+            if ($request->recipients) {
+                foreach ($request->recipients as $user_id) {
+                    PengumumanTo::create([
+                        'pengumuman_id' => $pengumuman->id,
+                        'penerima_id' => explode('|', $user_id)[1],
+                        'is_single_user' => explode('|', $user_id)[0] === '1' ? 1 : 0,
+                    ]);
+                }
             }
         }
+
 
         if ($request->attachment) {
             foreach ($request->attachment as $file) {

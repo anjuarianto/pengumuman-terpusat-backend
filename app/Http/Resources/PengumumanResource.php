@@ -26,12 +26,12 @@ class PengumumanResource extends JsonResource
             'waktu' => date('Y-m-d H:i:s', strtotime($this->waktu)),
             'room' => $this->room->only('id', 'name'),
             'created_by' => $this->dibuat_oleh->name,
-            'is_private' => $this->is_private,
+            'is_private' => (int)$this->is_private,
             'penerima' => $this->pengumumanToUsers->map(function ($pengumumanTo) {
                 return ['name' => $pengumumanTo->is_single_user ? $pengumumanTo->user->name : $pengumumanTo->userGroup->name, 'penerima_id' => $pengumumanTo->penerima_id, 'is_single_user' => $pengumumanTo->is_single_user ? true : false];
             }),
             'files' => $this->files->map(function ($file) {
-                return ['file' => $file->file, 'original_name' => $file->original_name];
+                return ['id' => $file->id, 'file' => $file->file, 'original_name' => $file->original_name];
             }),
             'can_reply' => $this->canReply($request),
             'can_edit' => $this->canEdit($request),
