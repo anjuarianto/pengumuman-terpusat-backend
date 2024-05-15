@@ -78,9 +78,6 @@ class PengumumanController extends Controller
                         return $this->error(null, 'Ukuran file attachment tidak boleh lebih dari 25MB', Response::HTTP_BAD_REQUEST);
                     }
 
-                    $file->validate([
-                        'upload' => 'required|file|mimes:jpeg,png,jpg,pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar|max:2048'
-                    ]);
                     $file->store('public/pengumuman');
                     $pengumuman->files()->create([
                         'file' => $file->hashName(),
