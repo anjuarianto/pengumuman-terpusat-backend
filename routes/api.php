@@ -64,6 +64,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::resource('/user', UserController::class);
 
+    Route::post('delete-attachment/{id}', \App\Http\Controllers\DeleteAttachment::class);
+
     Route::get('/user/dosen', function () {
         return User::where('role', 'dosen')->get();
     });
