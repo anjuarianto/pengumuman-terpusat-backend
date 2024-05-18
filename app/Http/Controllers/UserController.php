@@ -29,7 +29,7 @@ class UserController extends Controller
     {
 
         if (User::getRoleBasedOnEmailDomain($request->email) == null) {
-            return $this->error(null, 'Email tidak valid', 400);
+            return $this->error(null, 'Harus menggunakan email itera', 400);
         }
 
         DB::beginTransaction();
