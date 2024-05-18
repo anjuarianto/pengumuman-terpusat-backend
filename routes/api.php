@@ -33,7 +33,7 @@ Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
     return User::mySession();
 });
 
-Route::get('/pengumuman-publik', \App\Http\Controllers\PengumumanNoAuthController::class);
+Route::get('/pengumuman', [PengumumanController::class, 'index']);
 Route::middleware('auth:sanctum')->group(function () {
 
 
@@ -51,7 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ];
     });
 
-    Route::resource('pengumuman', PengumumanController::class);
+    Route::resource('pengumuman', PengumumanController::class)->except(['index']);
     Route::resource('user-group', UserGroupController::class);
     Route::resource('room', RoomController::class);
     Route::resource('pengumuman/{pengumuman}/reply', \App\Http\Controllers\PengumumanReplyController::class);

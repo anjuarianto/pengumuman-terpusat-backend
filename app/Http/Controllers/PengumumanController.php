@@ -23,11 +23,13 @@ class PengumumanController extends Controller
      */
     public function index(Request $request)
     {
-        if (!Auth::user()->checkPermissionTo('view-pengumuman')) {
-            return $this->error(null, 'Tidak memiliki akses untuk melihat pengumuman', Response::HTTP_FORBIDDEN);
+        $query = Pengumuman::query();
+
+        if (!Auth::user()) {
+            $query->where('is_private', 0);
         }
 
-        $pengumumans = Pengumuman::filter($request)
+        $pengumumans = $query->filter($request)
             ->orderBy('created_at', $request->order ?? 'desc')
             ->paginate();
 
