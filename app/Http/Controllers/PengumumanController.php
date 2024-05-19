@@ -27,7 +27,7 @@ class PengumumanController extends Controller
 
         $pengumumans = $query->filter($request)
             ->orderBy('created_at', $request->order ?? 'desc')
-            ->paginate();
+            ->paginate(30);
 
         $pengumuman = PengumumanResource::collection($pengumumans)->response()->getData(true);
 
