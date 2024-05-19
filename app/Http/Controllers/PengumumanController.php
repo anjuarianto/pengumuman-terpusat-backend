@@ -25,10 +25,6 @@ class PengumumanController extends Controller
     {
         $query = Pengumuman::query();
 
-        if (!Auth::user()) {
-            $query->where('is_private', 0);
-        }
-
         $pengumumans = $query->filter($request)
             ->orderBy('created_at', $request->order ?? 'desc')
             ->paginate();
@@ -49,6 +45,14 @@ class PengumumanController extends Controller
 
         if ($request->waktu < date('Y-m-d H:i:s')) {
             return $this->error(null, 'Waktu pengumuman tidak boleh kurang dari waktu sekarang', Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($request->konten == null) {
+            return $this->error(null, 'Konten pengumuman tidak boleh kosong', Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($request->is_private && !$request->recipients) {
+            return $this->error(null, 'Penerima pengumuman tidak boleh kosong', Response::HTTP_BAD_REQUEST);
         }
 
         DB::beginTransaction();
@@ -76,8 +80,8 @@ class PengumumanController extends Controller
 
             if ($request->attachment) {
                 foreach ($request->attachment as $file) {
-                    if ($file->getSize() > 25000000) {
-                        return $this->error(null, 'Ukuran file attachment tidak boleh lebih dari 25MB', Response::HTTP_BAD_REQUEST);
+                    if ($file->getSize() > 5000000) {
+                        return $this->error(null, 'Ukuran file attachment tidak boleh lebih dari 5MB', Response::HTTP_BAD_REQUEST);
                     }
 
                     $file->store('public/pengumuman');
@@ -127,6 +131,14 @@ class PengumumanController extends Controller
             return $this->error(null, 'Waktu pengumuman tidak boleh kurang dari waktu sekarang', Response::HTTP_BAD_REQUEST);
         }
 
+        if ($request->konten == null) {
+            return $this->error(null, 'Konten pengumuman tidak boleh kosong', Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($request->is_private && !$request->recipients) {
+            return $this->error(null, 'Penerima pengumuman tidak boleh kosong', Response::HTTP_BAD_REQUEST);
+        }
+
         $pengumuman->update([
             'judul' => $request->judul,
             'konten' => $request->konten,
@@ -153,8 +165,8 @@ class PengumumanController extends Controller
 
         if ($request->attachment) {
             foreach ($request->attachment as $file) {
-                if ($file->getSize() > 2000000) {
-                    return $this->error(null, 'Ukuran file attachment tidak boleh lebih dari 2MB', Response::HTTP_BAD_REQUEST);
+                if ($file->getSize() > 5000000) {
+                    return $this->error(null, 'Ukuran file attachment tidak boleh lebih dari 5MB', Response::HTTP_BAD_REQUEST);
                 }
                 $file->store('public/pengumuman');
                 $pengumuman->files()->create([
