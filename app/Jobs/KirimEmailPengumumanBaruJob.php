@@ -28,6 +28,8 @@ class KirimEmailPengumumanBaruJob implements ShouldQueue
      */
     public function handle(): void
     {
-        Notification::route('mail', $this->pengumuman->usersFromPengumumanTo->pluck('email')->toArray())->notify(new \App\Notifications\PengumumanBaruNotification($this->pengumuman));
+        $recipients = $this->pengumuman->usersFromPengumumanTo->pluck('email')->toArray();
+        $recipients[] = $this->pengumuman->user->email;
+        Notification::route('mail', $recipients)->notify(new \App\Notifications\PengumumanBaruNotification($this->pengumuman));
     }
 }

@@ -28,6 +28,8 @@ class NotifikasiReplyBaruJob implements ShouldQueue
      */
     public function handle(): void
     {
-        Notification::route('mail', $this->comment->pengumuman->usersFromPengumumanTo->pluck('email')->toArray())->notify(new \App\Notifications\ReplyPengumumanBaruNotification($this->comment));
+        $recipients = $this->comment->pengumuman->usersFromPengumumanTo->pluck('email')->toArray();
+        $recipients[] = $this->comment->pengumuman->user->email;
+        Notification::route('mail', $recipients)->notify(new \App\Notifications\ReplyPengumumanBaruNotification($this->comment));
     }
 }
