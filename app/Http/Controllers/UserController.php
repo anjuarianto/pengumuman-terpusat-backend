@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
+use App\Imports\UserImport;
 use App\Models\User;
 use App\Models\UserGroup;
 use App\Models\UserGroupHasUser;
@@ -10,7 +11,7 @@ use App\Traits\HttpResponses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-
+use Maatwebsite\Excel\Facades\Excel;
 
 class UserController extends Controller
 {
@@ -93,5 +94,16 @@ class UserController extends Controller
         $user->delete();
 
         return $this->success(null, 200, 'User berhasil dihapus');
+    }
+
+    public function upload(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xls,xlsx|max:2048'
+        ]);
+
+        Excel::import(new UserImport, $request->file('file'));
+
+        return $this->success(null, 200, 'Data berhasil di upload');
     }
 }

@@ -62,6 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/room-member/join', [\App\Http\Controllers\RoomMemberController::class, 'join']);
     Route::post('/room-member/unjoin', [\App\Http\Controllers\RoomMemberController::class, 'unjoin']);
 
+    Route::post('/user-excel-upload', [\App\Http\Controllers\UserController::class, 'upload'])->name('upload-user-excel');
     Route::resource('/user', UserController::class);
 
     Route::post('delete-attachment/{id}', \App\Http\Controllers\DeleteAttachment::class);
